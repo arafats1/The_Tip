@@ -8,7 +8,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [recentTips, setRecentTips] = useState([]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
   const [goals, setGoals] = useState([]);
   
   // QR Modal State
@@ -82,11 +82,22 @@ export default function Dashboard() {
   const fetchTransactions = async (workerId) => {
     try {
       const result = await api.getTransactions(workerId);
-      if (result.data && Array.isArray(result.data)) {
-        // Filter out goal deposits, only show standard tips
-        const filteredData = result.data.filter(t => !t.type || t.type === 'tip');
+      // Determine if we have data in result.data or if result is the array itself
+      const rawData = Array.isArray(result) ? result : (result.data || []);
+      
+      if (Array.isArray(rawData)) {
+        // Handle both flat and Strapi attributes format
+        const allTransactions = rawData.map(t => t.attributes ? { id: t.id, ...t.attributes } : t);
         
-        const formattedTips = filteredData.map(transaction => {
+        // Sort by date newest first
+        const sortedData = allTransactions.sort((a, b) => 
+          new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
+        );
+        
+        // Filter out goal deposits, only show standard tips, withdrawals, and transfers
+        const filteredData = sortedData.filter(t => !t.type || ['tip', 'withdrawal', 'transfer'].includes(t.type));
+        
+        const formattedTransactions = filteredData.map(transaction => {
           const createdAt = new Date(transaction.createdAt || transaction.created_at);
           const now = new Date();
           const diffMs = now - createdAt;
@@ -111,15 +122,25 @@ export default function Dashboard() {
             'mastercard': 'Mastercard'
           };
 
+          let fromName = transaction.senderName || transaction.sender_name || 'Anonymous';
+          let type = transaction.type || 'tip';
+          
+          if (type === 'withdrawal') {
+            fromName = 'Withdrawal to ' + (transaction.phone || worker?.phone || 'Mobile Money');
+          } else if (type === 'transfer') {
+            fromName = 'Sent to ' + (transaction.recipient || 'Mobile Money');
+          }
+
           return {
             id: transaction.id,
             amount: parseFloat(transaction.amount || 0),
-            from: transaction.senderName || transaction.sender_name || 'Anonymous',
+            from: fromName,
             time: timeAgo,
-            method: methodMap[transaction.method] || transaction.method
+            method: methodMap[transaction.method?.toLowerCase()] || transaction.method || 'Mobile Money',
+            type: type
           };
         });
-        setRecentTips(formattedTips);
+        setRecentTransactions(formattedTransactions);
       }
     } catch (err) {
       console.error('Failed to fetch transactions', err);
@@ -193,21 +214,26 @@ export default function Dashboard() {
       await api.updateWorker(workerId, { balance: newBalance });
       
       // Log Withdrawal Transaction
-      await api.createTransaction({
+      const txResult = await api.createTransaction({
         amount: amount,
-        method: 'Mobile Money',
+        method: 'momo',
         status: 'completed',
         tip_worker: workerId,
         type: 'withdrawal',
         reference: `WD-${Date.now()}`,
-        from: 'Wallet'
+        from: 'Wallet',
+        phone: worker.phone
       });
+
+      if (!txResult || txResult.error) {
+        throw new Error(txResult?.error?.message || 'Failed to log transaction');
+      }
       
       // Update local state
       setWorker({ ...worker, balance: newBalance });
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
-      fetchTransactions(worker.id);
+      fetchTransactions(workerId);
       alert('Withdrawal successful! Funds sent to ' + worker.phone);
     } catch (err) {
       console.error('Withdraw error', err);
@@ -238,9 +264,9 @@ export default function Dashboard() {
       await api.updateWorker(workerId, { balance: newBalance });
       
       // Log Send Transaction
-      await api.createTransaction({
+      const txResult = await api.createTransaction({
         amount: amount,
-        method: sendForm.network,
+        method: 'momo',
         status: 'completed',
         tip_worker: workerId,
         type: 'transfer',
@@ -248,12 +274,16 @@ export default function Dashboard() {
         from: 'Wallet',
         recipient: sendForm.phone
       });
+
+      if (!txResult || txResult.error) {
+        throw new Error(txResult?.error?.message || 'Failed to log transaction');
+      }
       
       // Update local state
       setWorker({ ...worker, balance: newBalance });
       setIsSendModalOpen(false);
       setSendForm({ amount: '', network: 'MTN', phone: '' });
-      fetchTransactions(worker.id);
+      fetchTransactions(workerId);
       alert(`Sent UGX ${amount.toLocaleString()} to ${sendForm.phone} (${sendForm.network})`);
     } catch (err) {
       console.error('Send error', err);
@@ -332,30 +362,38 @@ export default function Dashboard() {
         {/* Recent Transactions */}
         <div className="md:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold text-primary">Recent Tips</h3>
+            <h3 className="text-xl font-bold text-primary">Recent Activity</h3>
             <button className="text-accent font-bold text-sm flex items-center gap-1">
               View All <History size={14} />
             </button>
           </div>
           <div className="bg-white rounded-2xl card-shadow border border-gray-50 overflow-hidden">
-            {recentTips.length === 0 ? (
+            {recentTransactions.length === 0 ? (
               <div className="p-8 text-center text-gray-400">
-                <p className="font-medium">No tips received yet</p>
+                <p className="font-medium">No activity yet</p>
                 <p className="text-xs mt-1">Share your Tip ID to start receiving!</p>
               </div>
             ) : (
-              recentTips.map((tip) => (
-                <div key={tip.id} className="flex items-center justify-between p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+              recentTransactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-accent/10 text-accent rounded-full flex items-center justify-center">
-                      <ArrowDownLeft size={20} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      tx.type === 'tip' ? 'bg-accent/10 text-accent' : 
+                      tx.type === 'withdrawal' ? 'bg-red-100 text-red-600' :
+                      'bg-orange-100 text-orange-600'
+                    }`}>
+                      {tx.type === 'tip' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                     </div>
                     <div>
-                      <p className="font-bold text-primary">UGX {tip.amount.toLocaleString()}</p>
-                      <p className="text-xs text-gray-500">{tip.from} • {tip.method}</p>
+                      <p className={`font-bold ${
+                        tx.type === 'tip' ? 'text-primary' : 'text-gray-900'
+                      }`}>
+                        {tx.type === 'tip' ? '+' : '-'} UGX {tx.amount.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-500">{tx.from} • {tx.method}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400">{tip.time}</p>
+                  <p className="text-xs text-gray-400">{tx.time}</p>
                 </div>
               ))
             )}
