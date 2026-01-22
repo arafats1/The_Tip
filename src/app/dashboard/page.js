@@ -183,7 +183,7 @@ export default function Dashboard() {
                  <ArrowUpRight size={16} /> Send
                </button>
                <a href="/goals" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
-                 <TrendingUp size={16} /> Goals
+                 <TrendingUp size={16} /> Invest
                </a>
             </div>
           </div>
