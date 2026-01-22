@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X, Download, Share2, Copy, Check, Phone } from 'lucide-react';
 import { api } from '@/lib/api';
 import { QRCodeCanvas } from 'qrcode.react';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
@@ -363,9 +364,9 @@ export default function Dashboard() {
         <div className="md:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-bold text-primary">Recent Activity</h3>
-            <button className="text-accent font-bold text-sm flex items-center gap-1">
+            <Link href="/dashboard/history" className="text-accent font-bold text-sm flex items-center gap-1 hover:underline">
               View All <History size={14} />
-            </button>
+            </Link>
           </div>
           <div className="bg-white rounded-2xl card-shadow border border-gray-50 overflow-hidden">
             {recentTransactions.length === 0 ? (
@@ -374,7 +375,7 @@ export default function Dashboard() {
                 <p className="text-xs mt-1">Share your Tip ID to start receiving!</p>
               </div>
             ) : (
-              recentTransactions.map((tx) => (
+              recentTransactions.slice(0, 4).map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -396,6 +397,11 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">{tx.time}</p>
                 </div>
               ))
+            )}
+            {recentTransactions.length > 4 && (
+              <Link href="/dashboard/history" className="block w-full py-3 text-center text-xs font-bold text-gray-400 border-t border-gray-50 hover:bg-gray-50">
+                + {recentTransactions.length - 4} more transactions
+              </Link>
             )}
           </div>
         </div>
