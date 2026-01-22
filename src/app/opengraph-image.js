@@ -31,18 +31,18 @@ export default async function Image() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 200,
-            height: 200,
+            width: 280,
+            height: 280,
             background: '#1E1B4B',
-            borderRadius: 40,
-            border: '6px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 60,
+            border: '8px solid rgba(255, 255, 255, 0.1)',
             marginBottom: 40,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.4)',
           }}
         >
           <span
             style={{
-              fontSize: 140,
+              fontSize: 200,
               fontWeight: 900,
               color: 'white',
               lineHeight: 1,
@@ -60,7 +60,7 @@ export default async function Image() {
         >
           <span
             style={{
-              fontSize: 80,
+              fontSize: 100,
               fontWeight: 800,
               color: 'white',
               letterSpacing: '-0.03em',
@@ -71,7 +71,7 @@ export default async function Image() {
           </span>
           <span
             style={{
-              fontSize: 28,
+              fontSize: 32,
               fontWeight: 600,
               color: '#FBBF24',
               textTransform: 'uppercase',
