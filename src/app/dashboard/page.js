@@ -12,22 +12,22 @@ export default function Dashboard() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
       {/* Wallet Balance Card */}
-      <div className="gradient-bg rounded-[2rem] p-8 text-white card-shadow relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
+      <div className="gradient-bg rounded-[2rem] p-6 md:p-8 text-white card-shadow relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="w-full md:w-auto">
             <p className="text-gray-300 mb-2 font-medium">Available Balance</p>
-            <h2 className="text-4xl md:text-5xl font-bold">UGX 145,500</h2>
-            <div className="flex gap-4 mt-6">
-               <button className="bg-white text-primary px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2">
+            <h2 className="text-3xl md:text-5xl font-bold">UGX 145,500</h2>
+            <div className="flex gap-3 md:gap-4 mt-6">
+               <button className="flex-1 md:flex-none bg-white text-primary px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <ArrowDownLeft size={16} /> Withdraw
                </button>
-               <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2">
+               <button className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <ArrowUpRight size={16} /> Send
                </button>
             </div>
           </div>
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex flex-col items-center">
-             <QrCode size={80} className="mb-3" />
+          <div className="w-full md:w-auto bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl flex flex-col items-center">
+             <QrCode size={100} className="mb-3" />
              <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Your Tip ID: TIP-9283</p>
              <button className="mt-2 text-xs font-bold underline">Show Full QR</button>
           </div>

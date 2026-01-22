@@ -19,8 +19,8 @@ export default function TipPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 pb-20">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] card-shadow p-8 text-center space-y-6">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 pb-20">
+      <div className="max-w-md w-full bg-white rounded-[2.5rem] card-shadow p-6 md:p-8 text-center space-y-6">
         
         {step < 3 && (
           <>
