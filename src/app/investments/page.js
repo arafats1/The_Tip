@@ -5,6 +5,12 @@ import { Target, TrendingUp, ShieldCheck, ChevronRight, Info, X, Calendar, Walle
 import { api } from '@/lib/api';
 
 export default function InvestmentsPage() {
+  const funds = [
+    { name: "Balanced Fund", manager: "Xeno", yield: "+12.5% p.a", risk: "Low", icon: "📈" },
+    { name: "Equity Fund", manager: "UAP Old Mutual", yield: "+15.2% p.a", risk: "Medium", icon: "📊" },
+    { name: "Money Market", manager: "ICEA Lion", yield: "+11.0% p.a", risk: "Very Low", icon: "💰" },
+  ];
+
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [worker, setWorker] = useState(null);
@@ -55,8 +61,8 @@ export default function InvestmentsPage() {
     }
   };
 
-  const microInvestments = goals.filter(g => g.isMicroInvestment);
-  const financialGoals = goals.filter(g => !g.isMicroInvestment);
+  const microInvestments = goals.filter(g => funds.some(f => g.title === `${f.manager} ${f.name}`));
+  const financialGoals = goals.filter(g => !funds.some(f => g.title === `${f.manager} ${f.name}`));
   const investedBalance = microInvestments.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0);
   const financialGoalsTotal = financialGoals.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0);
 
@@ -101,7 +107,6 @@ export default function InvestmentsPage() {
             title: fundTitle,
             targetAmount: 10000000, // Default 10M target for funds
             isLongTerm: true,
-            isMicroInvestment: true,
             tip_worker: worker.id
           };
           const response = await api.createGoal(newGoalData);
@@ -166,12 +171,6 @@ export default function InvestmentsPage() {
       </div>
     );
   }
-
-  const funds = [
-    { name: "Balanced Fund", manager: "Xeno", yield: "+12.5% p.a", risk: "Low", icon: "📈" },
-    { name: "Equity Fund", manager: "UAP Old Mutual", yield: "+15.2% p.a", risk: "Medium", icon: "📊" },
-    { name: "Money Market", manager: "ICEA Lion", yield: "+11.0% p.a", risk: "Very Low", icon: "💰" },
-  ];
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-10 md:space-y-12 pb-20">
@@ -462,7 +461,7 @@ export default function InvestmentsPage() {
                     className={`p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${fundMethod === 'momo' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 text-gray-400'}`}
                   >
                     <ShieldCheck size={20} /> 
-                    <div className="text-xs">MoMo</div>
+                    <div className="text-xs text-center leading-tight">Mobile<br/>Money</div>
                   </button>
                 </div>
               </div>
