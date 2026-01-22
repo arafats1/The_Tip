@@ -154,7 +154,7 @@ export default function RegisterPage() {
                     <input 
                       required
                       type="tel" 
-                      placeholder="e.g. 0770123 0"
+                      placeholder="e.g. 0770123456"
                       className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}

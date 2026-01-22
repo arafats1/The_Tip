@@ -113,7 +113,7 @@ export default function ActivityHistory() {
             <input 
               type="text"
               placeholder="Search amount or name..."
-              className="w-full bg-white border border-gray-200 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all text-sm font-medium"
+              className="w-full bg-white border border-gray-200 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all text-sm font-medium text-primary placeholder:text-gray-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -126,7 +126,7 @@ export default function ActivityHistory() {
                 className={`px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border-2 ${
                   filterType === type 
                     ? 'bg-primary border-primary text-white' 
-                    : 'bg-white border-gray-100 text-gray-400'
+                    : 'bg-white border-gray-100 text-gray-500'
                 }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
