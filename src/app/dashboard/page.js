@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recentTips, setRecentTips] = useState([]);
 
   useEffect(() => {
     const fetchLatestBalance = async () => {
@@ -29,12 +30,16 @@ export default function Dashboard() {
           if (updatedData) {
             setWorker(updatedData);
             localStorage.setItem('tip_worker', JSON.stringify(updatedData));
+            // Fetch transactions for this worker
+            fetchTransactions(localData.id);
           } else {
             setWorker(localData);
+            fetchTransactions(localData.id);
           }
         } catch (err) {
           console.error("Failed to fetch latest balance", err);
           setWorker(localData);
+          fetchTransactions(localData.id);
         }
       } else {
         window.location.href = '/login';
@@ -42,14 +47,52 @@ export default function Dashboard() {
       setLoading(false);
     };
 
+    const fetchTransactions = async (workerId) => {
+      try {
+        const result = await api.getTransactions(workerId);
+        if (result.data && Array.isArray(result.data)) {
+          const formattedTips = result.data.map(transaction => {
+            const createdAt = new Date(transaction.createdAt || transaction.created_at);
+            const now = new Date();
+            const diffMs = now - createdAt;
+            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            let timeAgo;
+            if (diffHrs < 1) {
+              timeAgo = 'Just now';
+            } else if (diffHrs < 24) {
+              timeAgo = `${diffHrs} hour${diffHrs > 1 ? 's' : ''} ago`;
+            } else if (diffDays === 1) {
+              timeAgo = 'Yesterday';
+            } else {
+              timeAgo = `${diffDays} days ago`;
+            }
+
+            const methodMap = {
+              'momo': 'Mobile Money',
+              'card': 'Card Payment',
+              'visa': 'Visa',
+              'mastercard': 'Mastercard'
+            };
+
+            return {
+              id: transaction.id,
+              amount: parseFloat(transaction.amount || 0),
+              from: transaction.senderName || transaction.sender_name || 'Anonymous',
+              time: timeAgo,
+              method: methodMap[transaction.method] || transaction.method
+            };
+          });
+          setRecentTips(formattedTips);
+        }
+      } catch (err) {
+        console.error('Failed to fetch transactions', err);
+      }
+    };
+
     fetchLatestBalance();
   }, []);
-
-  const recentTips = [
-    { id: 1, amount: 5000, from: "Anonymous", time: "2 hours ago", method: "Airtel Money" },
-    { id: 2, amount: 20000, from: "Safari Guest", time: "5 hours ago", method: "Visa" },
-    { id: 3, amount: 2000, from: "Anonymous", time: "Yesterday", method: "MTN MoMo" },
-  ];
 
   if (!worker) return null;
 
@@ -90,20 +133,27 @@ export default function Dashboard() {
             </button>
           </div>
           <div className="bg-white rounded-2xl card-shadow border border-gray-50 overflow-hidden">
-            {recentTips.map((tip) => (
-              <div key={tip.id} className="flex items-center justify-between p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-accent/10 text-accent rounded-full flex items-center justify-center">
-                    <ArrowDownLeft size={20} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-primary">UGX {tip.amount.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">{tip.from} • {tip.method}</p>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400">{tip.time}</p>
+            {recentTips.length === 0 ? (
+              <div className="p-8 text-center text-gray-400">
+                <p className="font-medium">No tips received yet</p>
+                <p className="text-xs mt-1">Share your Tip ID to start receiving!</p>
               </div>
-            ))}
+            ) : (
+              recentTips.map((tip) => (
+                <div key={tip.id} className="flex items-center justify-between p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-accent/10 text-accent rounded-full flex items-center justify-center">
+                      <ArrowDownLeft size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-primary">UGX {tip.amount.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{tip.from} • {tip.method}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400">{tip.time}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

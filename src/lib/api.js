@@ -40,6 +40,11 @@ export const api = {
     return response.json();
   },
 
+  getTransactions: async (workerId) => {
+    const response = await fetch(`${API_URL}/tip-transactions/worker/${workerId}`);
+    return response.json();
+  },
+
   // Goals
   getGoals: async (workerId) => {
     const response = await fetch(`${API_URL}/tip-goals?filters[tip_worker][id][$eq]=${workerId}`);
