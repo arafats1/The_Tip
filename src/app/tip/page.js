@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Heart, ShieldCheck, CreditCard, Smartphone, QrCode, Search, User, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function TipPage() {
   const [amount, setAmount] = useState('');
@@ -12,20 +13,33 @@ export default function TipPage() {
   const [momoNumber, setMomoNumber] = useState('');
   const [cardData, setCardData] = useState({ number: '', expiry: '', cvv: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
   const [worker, setWorker] = useState(null);
 
-  const handleFindWorker = (e) => {
+  const handleFindWorker = async (e) => {
     e.preventDefault();
-    if (searchId.length >= 4) {
-      // Simulation of finding a worker
-      setWorker({
-        name: "Arafat",
-        role: "Service Professional",
-        location: "Kampala, Uganda",
-        id: searchId.toUpperCase()
-      });
-      setStep(1);
+    setError('');
+    setIsProcessing(true);
+
+    try {
+      const result = await api.lookupWorker(searchId.toUpperCase());
+      if (result && !result.error && result.fullName) {
+        setWorker({
+          name: result.fullName,
+          role: result.occupation,
+          location: result.city,
+          id: result.tipId,
+          rawId: result.id
+        });
+        setStep(1);
+      } else {
+        setError('Worker not found. Please check the ID.');
+      }
+    } catch (err) {
+      setError('Connection error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -33,14 +47,32 @@ export default function TipPage() {
     if (amount) setStep(step + 1);
   };
 
-  const handlePayment = (e) => {
+  const handlePayment = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
-    // Simulate API call
-    setTimeout(() => {
+    setError('');
+
+    try {
+      const payload = {
+        amount: parseFloat(amount),
+        method: paymentMethod,
+        status: 'completed', // In real life, this would be 'pending' until callback
+        tip_worker: worker.rawId,
+        reference: `TIP-${Date.now()}`
+      };
+
+      const result = await api.createTransaction(payload);
+      
+      if (result.data) {
+        setStep(3);
+      } else {
+        setError('Payment failed. Please try again.');
+      }
+    } catch (err) {
+      setError('Connection error during payment');
+    } finally {
       setIsProcessing(false);
-      setStep(3);
-    }, 2000);
+    }
   };
 
   return (
@@ -96,12 +128,21 @@ export default function TipPage() {
                     onChange={(e) => setSearchId(e.target.value)}
                   />
                 </div>
+
+                {error && (
+                  <p className="text-xs text-red-500 font-bold">{error}</p>
+                )}
+
                 <button 
                   type="submit"
-                  disabled={searchId.length < 4}
+                  disabled={searchId.length < 4 || isProcessing}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all disabled:opacity-50 shadow-lg shadow-indigo-100"
                 >
-                  Find Professional <Search size={20} />
+                  {isProcessing ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>Find Professional <Search size={20} /></>
+                  )}
                 </button>
               </form>
             </div>
@@ -273,6 +314,10 @@ export default function TipPage() {
                           />
                         </div>
                       </div>
+                    )}
+
+                    {error && (
+                      <p className="text-xs text-red-500 font-bold text-center">{error}</p>
                     )}
 
                     <button 

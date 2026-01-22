@@ -1,13 +1,27 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode } from 'lucide-react';
 
 export default function Dashboard() {
+  const [worker, setWorker] = useState(null);
+
+  useEffect(() => {
+    const savedWorker = localStorage.getItem('tip_worker');
+    if (savedWorker) {
+      setWorker(JSON.parse(savedWorker));
+    } else {
+      window.location.href = '/login';
+    }
+  }, []);
+
   const recentTips = [
     { id: 1, amount: 5000, from: "Anonymous", time: "2 hours ago", method: "Airtel Money" },
     { id: 2, amount: 20000, from: "Safari Guest", time: "5 hours ago", method: "Visa" },
     { id: 3, amount: 2000, from: "Anonymous", time: "Yesterday", method: "MTN MoMo" },
   ];
+
+  if (!worker) return null;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
@@ -15,8 +29,8 @@ export default function Dashboard() {
       <div className="gradient-bg rounded-[2rem] p-6 md:p-8 text-white card-shadow relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="w-full md:w-auto">
-            <p className="text-gray-300 mb-2 font-medium">Available Balance</p>
-            <h2 className="text-3xl md:text-5xl font-bold">UGX 145,500</h2>
+            <p className="text-gray-300 mb-2 font-medium">Hello, {worker.fullName}</p>
+            <h2 className="text-3xl md:text-5xl font-bold">UGX {parseFloat(worker.balance || 0).toLocaleString()}</h2>
             <div className="flex gap-3 md:gap-4 mt-6">
                <button className="flex-1 md:flex-none bg-white text-primary px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <ArrowDownLeft size={16} /> Withdraw
@@ -28,7 +42,7 @@ export default function Dashboard() {
           </div>
           <div className="w-full md:w-auto bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl flex flex-col items-center">
              <QrCode size={100} className="mb-3" />
-             <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Your Tip ID: TIP-9283</p>
+             <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Your Tip ID: {worker.tipId}</p>
              <button className="mt-2 text-xs font-bold underline">Show Full QR</button>
           </div>
         </div>

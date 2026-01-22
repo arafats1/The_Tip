@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Phone, Lock, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -9,11 +10,28 @@ export default function LoginPage() {
     pin: '',
   });
   const [showPin, setShowPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Logic for login would go here
-    window.location.href = '/dashboard';
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await api.loginWorker(formData.phone, formData.pin);
+      
+      if (result.worker) {
+        localStorage.setItem('tip_worker', JSON.stringify(result.worker));
+        window.location.href = '/dashboard';
+      } else {
+        setError(result.error || 'Invalid phone or PIN');
+      }
+    } catch (err) {
+      setError('Connection error. Is the backend running?');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -102,11 +120,27 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100">
+                {error}
+              </div>
+            )}
+
             <button 
               type="submit"
-              className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100"
+              disabled={isLoading}
+              className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-70"
             >
-              Sign In <ArrowRight size={20} />
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Sign In <ArrowRight size={20} />
+                </>
+              )}
             </button>
           </form>
 

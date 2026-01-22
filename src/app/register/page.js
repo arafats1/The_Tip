@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import { User, Phone, Briefcase, ShieldCheck, ArrowRight, CheckCircle2, MapPin, Lock, Eye, EyeOff } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [showPin, setShowPin] = useState(false);
   const [showConfirmPin, setShowConfirmPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -17,12 +20,43 @@ export default function RegisterPage() {
     confirmPin: '',
   });
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
-    if (step < 3) setStep(step + 1);
-    else {
-      // Final submission logic
-      window.location.href = '/dashboard';
+    setError('');
+
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      if (formData.pin !== formData.confirmPin) {
+        setError('PINs do not match');
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const payload = {
+          fullName: formData.fullName,
+          phone: formData.phone,
+          occupation: formData.occupation === 'Other' ? formData.otherOccupation : formData.occupation,
+          workplace: formData.workPlace,
+          pin: formData.pin,
+          city: 'Kampala', // Default for now
+        };
+
+        const result = await api.registerWorker(payload);
+        
+        if (result.data) {
+          // Success! Save worker data to local storage or state
+          localStorage.setItem('tip_worker', JSON.stringify(result.data));
+          window.location.href = '/dashboard';
+        } else {
+          setError(result.error?.message || 'Registration failed');
+        }
+      } catch (err) {
+        setError('Connection error. Is the backend running?');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -237,12 +271,27 @@ export default function RegisterPage() {
               </>
             ) : null}
 
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100">
+                {error}
+              </div>
+            )}
+
             <button 
               type="submit"
-              disabled={step === 3 && (formData.pin !== formData.confirmPin || !formData.pin)}
+              disabled={isLoading || (step === 3 && (formData.pin !== formData.confirmPin || !formData.pin))}
               className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
             >
-              {step < 3 ? 'Next Step' : 'Complete Registration'} <ArrowRight size={20} />
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  {step < 3 ? 'Next Step' : 'Complete Registration'} <ArrowRight size={20} />
+                </>
+              )}
             </button>
           </form>
 
