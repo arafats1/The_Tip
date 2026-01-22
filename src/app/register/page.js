@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, Briefcase, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { User, Phone, Briefcase, ShieldCheck, ArrowRight, CheckCircle2, MapPin } from 'lucide-react';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -9,6 +9,8 @@ export default function RegisterPage() {
     fullName: '',
     phone: '',
     occupation: '',
+    otherOccupation: '',
+    workPlace: '',
   });
 
   const handleNext = (e) => {
@@ -126,6 +128,34 @@ export default function RegisterPage() {
                       <option value="guide">Tour Guide</option>
                       <option value="other">Other Service Worker</option>
                     </select>
+                  </div>
+                </div>
+
+                {formData.occupation === 'other' && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Please specify your service area</label>
+                    <textarea 
+                      required
+                      placeholder="e.g. Saloon Stylist, Mechanic..."
+                      className="w-full bg-white border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400 min-h-[100px]"
+                      value={formData.otherOccupation}
+                      onChange={(e) => setFormData({...formData, otherOccupation: e.target.value})}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Work Place</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="e.g. Cafe Javas, Shell Bugolobi"
+                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400"
+                      value={formData.workPlace}
+                      onChange={(e) => setFormData({...formData, workPlace: e.target.value})}
+                    />
                   </div>
                 </div>
 
