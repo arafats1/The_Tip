@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Phone, Briefcase, ShieldCheck, ArrowRight, CheckCircle2, MapPin } from 'lucide-react';
+import { User, Phone, Briefcase, ShieldCheck, ArrowRight, CheckCircle2, MapPin, Lock } from 'lucide-react';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -11,11 +11,17 @@ export default function RegisterPage() {
     occupation: '',
     otherOccupation: '',
     workPlace: '',
+    pin: '',
+    confirmPin: '',
   });
 
   const handleNext = (e) => {
     e.preventDefault();
-    if (step < 2) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
+    else {
+      // Final submission logic
+      window.location.href = '/dashboard';
+    }
   };
 
   return (
@@ -69,9 +75,10 @@ export default function RegisterPage() {
             <div className="flex gap-2 mb-4">
                <div className={`h-2 flex-1 rounded-full transition-all ${step >= 1 ? 'bg-primary' : 'bg-gray-200'}`}></div>
                <div className={`h-2 flex-1 rounded-full transition-all ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+               <div className={`h-2 flex-1 rounded-full transition-all ${step >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
             </div>
             <h2 className="text-3xl font-bold text-primary">Create your account</h2>
-            <p className="text-gray-500 mt-2">Step {step} of 2: {step === 1 ? 'Personal details' : 'Professional info'}</p>
+            <p className="text-gray-500 mt-2">Step {step} of 3: {step === 1 ? 'Personal details' : step === 2 ? 'Professional info' : 'Security PIN'}</p>
           </div>
 
           <form onSubmit={handleNext} className="space-y-6">
@@ -108,7 +115,7 @@ export default function RegisterPage() {
                   <p className="text-[10px] text-gray-400 ml-1 italic">* This will only be used for withdrawals and never shared with tippers.</p>
                 </div>
               </>
-            ) : (
+            ) : step === 2 ? (
               <>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">What is your role?</label>
@@ -166,13 +173,60 @@ export default function RegisterPage() {
                   </p>
                 </div>
               </>
-            )}
+            ) : step === 3 ? (
+              <>
+                <div className="space-y-6">
+                  <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 flex items-center gap-4">
+                     <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shrink-0">
+                        <Lock size={20} />
+                     </div>
+                     <p className="text-sm text-primary font-medium">Create a 4-digit PIN to secure your wallet and tips.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Create Security PIN</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                      <input 
+                        required
+                        type="password"
+                        maxLength={4}
+                        placeholder="••••"
+                        className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-bold text-primary placeholder:text-gray-400 tracking-[0.5em]"
+                        value={formData.pin}
+                        onChange={(e) => setFormData({...formData, pin: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Confirm Security PIN</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                      <input 
+                        required
+                        type="password"
+                        maxLength={4}
+                        placeholder="••••"
+                        className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-bold text-primary placeholder:text-gray-400 tracking-[0.5em]"
+                        value={formData.confirmPin}
+                        onChange={(e) => setFormData({...formData, confirmPin: e.target.value})}
+                      />
+                    </div>
+                    {formData.pin && formData.confirmPin && formData.pin !== formData.confirmPin && (
+                      <p className="text-xs text-red-500 ml-1 font-bold">PINs do not match</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : null}
 
             <button 
               type="submit"
-              className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100"
+              disabled={step === 3 && (formData.pin !== formData.confirmPin || !formData.pin)}
+              className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
             >
-              {step === 1 ? 'Next Step' : 'Complete Registration'} <ArrowRight size={20} />
+              {step < 3 ? 'Next Step' : 'Complete Registration'} <ArrowRight size={20} />
             </button>
           </form>
 
