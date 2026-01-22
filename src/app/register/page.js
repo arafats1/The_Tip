@@ -131,7 +131,7 @@ export default function RegisterPage() {
 
                 <div className="bg-accent/5 p-4 rounded-2xl border border-accent/20 flex gap-3">
                   <ShieldCheck className="text-accent shrink-0" size={24} />
-                  <p className="text-xs text-accent-700 leading-relaxed font-medium">
+                  <p className="text-xs text-primary leading-relaxed font-medium">
                     By confirming, you agree to our Terms of Service. Your data is encrypted and managed according to Uganda's Data Protection Act.
                   </p>
                 </div>
