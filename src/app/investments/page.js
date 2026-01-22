@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Target, TrendingUp, ShieldCheck, ChevronRight, Info, X, Calendar, Wallet } from 'lucide-react';
+import { Target, TrendingUp, ShieldCheck, ChevronRight, ChevronLeft, Info, X, Calendar, Wallet } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export default function InvestmentsPage() {
@@ -174,6 +174,13 @@ export default function InvestmentsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-10 md:space-y-12 pb-20">
+      {/* Back Button (Small Screen only) */}
+      <div className="md:hidden pt-2">
+        <a href="/dashboard" className="inline-flex items-center gap-2 text-primary font-bold text-sm bg-gray-100 px-4 py-2 rounded-xl">
+          <ChevronLeft size={16} /> Back to Dashboard
+        </a>
+      </div>
+
       {/* Header */}
       <div className="space-y-2 text-center md:text-left pt-4">
         <h1 className="text-3xl md:text-4xl font-bold text-primary">Grow Your Earnings</h1>
