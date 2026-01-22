@@ -29,7 +29,10 @@ export default function LoginPage() {
         localStorage.setItem('tip_worker', JSON.stringify(workerData));
         window.location.href = '/dashboard';
       } else {
-        setError(result.error || 'Invalid phone or PIN');
+        const errorMsg = typeof result.error === 'object' 
+          ? (result.error.message || 'Invalid phone or PIN') 
+          : (result.error || 'Invalid phone or PIN');
+        setError(errorMsg);
       }
     } catch (err) {
       setError('Connection error. Is the backend running?');
@@ -90,7 +93,7 @@ export default function LoginPage() {
                 <input 
                   required
                   type="tel" 
-                  placeholder="0770 000 000"
+                  placeholder="0770123456"
                   className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
