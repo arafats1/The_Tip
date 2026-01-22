@@ -169,9 +169,12 @@ export default function GoalsPage() {
                           <h3 className="font-bold text-lg text-primary">{goal.title}</h3>
                           <p className="text-xs text-gray-400">Target: {goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : 'No deadline'}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${progress >= 100 ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'}`}>
-                          {progress >= 100 ? 'Completed' : 'On Track'}
-                        </span>
+                        <div className="text-right flex flex-col items-end gap-1">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${progress >= 100 ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'}`}>
+                            {progress >= 100 ? 'Completed' : 'On Track'}
+                          </span>
+                          <span className="text-xs font-bold text-primary">{progress}%</span>
+                        </div>
                      </div>
                      <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                        <div 
