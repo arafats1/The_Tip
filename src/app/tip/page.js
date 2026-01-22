@@ -26,14 +26,23 @@ export default function TipPage() {
         config,
         (decodedText) => {
           // Success
-          let tipId = decodedText;
-          if (decodedText.includes('/tip/')) {
-            tipId = decodedText.split('/tip/').pop();
-          } else if (decodedText.includes('tip:')) {
-            tipId = decodedText.split('tip:').pop();
-          }
+          let tipId = decodedText.trim();
           
-          handleScanSuccess(tipId);
+          // Handle full URLs like https://the-tip.app/tip/9283
+          if (tipId.includes('/tip/')) {
+            const parts = tipId.split('/tip/');
+            tipId = parts[parts.length - 1].split(/[/?#]/)[0];
+          } 
+          // Handle tip:9283 format
+          else if (tipId.toLowerCase().startsWith('tip:')) {
+            tipId = tipId.split(':')[1].trim();
+          }
+          // Remove any leading #
+          tipId = tipId.replace(/^#/, '');
+          
+          if (tipId) {
+            handleScanSuccess(tipId);
+          }
         },
         (errorMessage) => {
           // Error handling (too noisy to log)
@@ -54,12 +63,14 @@ export default function TipPage() {
 
   const handleScanSuccess = async (id) => {
     setIsScanning(false);
-    setSearchId(id);
-    // Auto-trigger worker lookup
+    // Clean ID: uppercase, trim, alphanumeric only
+    const cleanId = id.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
+    setSearchId(cleanId);
+    
     setError('');
     setIsProcessing(true);
     try {
-      const result = await api.lookupWorker(id.toUpperCase());
+      const result = await api.lookupWorker(cleanId);
       if (result && !result.error && result.fullName) {
         setWorker({
           name: result.fullName,
@@ -70,10 +81,11 @@ export default function TipPage() {
         });
         setStep(1);
       } else {
-        setError('Recipient not found from QR. Please try typing the ID.');
+        setError(`Recipient ID #${cleanId} not found. Please check and try again.`);
       }
     } catch (err) {
-      setError('Connection error');
+      console.error('Scan lookup error:', err);
+      setError('Connection error while looking up recipient.');
     } finally {
       setIsProcessing(false);
     }
