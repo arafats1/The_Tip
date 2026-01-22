@@ -323,20 +323,20 @@ export default function Dashboard() {
           <div className="w-full md:w-auto">
             <p className="text-gray-300 mb-2 font-medium">Hello, {worker.fullName}</p>
             <h2 className="text-3xl md:text-5xl font-bold">UGX {parseFloat(worker.balance || 0).toLocaleString()}</h2>
-            <div className="flex gap-3 md:gap-4 mt-6">
+            <div className="flex flex-wrap gap-3 md:gap-4 mt-6">
                <button 
                 onClick={() => setIsWithdrawModalOpen(true)}
-                className="flex-1 md:flex-none bg-white text-primary px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2"
+                className="flex-1 min-w-[110px] md:flex-none bg-white text-primary px-4 md:px-6 py-3 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2"
                >
                  <ArrowDownLeft size={16} /> Withdraw
                </button>
                <button 
                 onClick={() => setIsSendModalOpen(true)}
-                className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2"
+                className="flex-1 min-w-[110px] md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 md:px-6 py-3 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2"
                >
                  <ArrowUpRight size={16} /> Send
                </button>
-               <a href="/investments" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
+               <a href="/investments" className="flex-1 min-w-[110px] md:flex-none bg-accent text-white px-4 md:px-6 py-3 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2">
                  <TrendingUp size={16} /> Invest
                </a>
             </div>
