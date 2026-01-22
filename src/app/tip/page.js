@@ -250,14 +250,22 @@ export default function TipPage() {
                           <input 
                             required
                             type="text"
+                            maxLength={5}
                             placeholder="MM/YY"
                             className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
                             value={cardData.expiry}
-                            onChange={(e) => setCardData({...cardData, expiry: e.target.value})}
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/\D/g, '');
+                              if (val.length > 2) {
+                                val = val.substring(0, 2) + '/' + val.substring(2, 4);
+                              }
+                              setCardData({...cardData, expiry: val});
+                            }}
                           />
                           <input 
                             required
                             type="text"
+                            maxLength={4}
                             placeholder="CVV"
                             className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
                             value={cardData.cvv}
