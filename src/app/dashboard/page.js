@@ -46,24 +46,28 @@ export default function Dashboard() {
           const workerId = localData.documentId || localData.document_id || localData.id;
           const result = await api.getWorker(workerId);
           
-          let updatedData = null;
-          // Handle Strapi 5 response format
-          if (result.data) {
-            updatedData = { ...localData, ...result.data, documentId: result.data.documentId || result.data.id };
-          } else if (result.id) {
-            updatedData = { ...localData, ...result, documentId: result.documentId || result.id };
-          }
-
+          let updatedData = result.data || (result.id ? result : null);
+          
           if (updatedData) {
-            setWorker(updatedData);
-            localStorage.setItem('tip_worker', JSON.stringify(updatedData));
-            // Fetch data
-            fetchTransactions(localData.id);
-            fetchGoals(localData.id);
+            const finalWorker = {
+              ...localData,
+              ...updatedData,
+              numericId: updatedData.id || localData.id,
+              documentId: updatedData.documentId || updatedData.id || localData.documentId
+            };
+            setWorker(finalWorker);
+            localStorage.setItem('tip_worker', JSON.stringify(finalWorker));
+            fetchTransactions(finalWorker.numericId);
+            fetchGoals(finalWorker.numericId);
           } else {
-            setWorker(localData);
-            fetchTransactions(localData.id);
-            fetchGoals(localData.id);
+            const finalWorker = {
+              ...localData,
+              numericId: localData.id,
+              documentId: localData.documentId || localData.id
+            };
+            setWorker(finalWorker);
+            fetchTransactions(finalWorker.numericId);
+            fetchGoals(finalWorker.numericId);
           }
         } catch (err) {
           console.error("Failed to fetch latest balance", err);
@@ -153,7 +157,16 @@ export default function Dashboard() {
       const result = await api.getGoals(workerId);
       if (result.data) {
         // Strapi 5 usually returns flat data if we configured it, but let's handle both
-        const allGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
+        const allGoals = result.data.map(g => {
+          const item = g.attributes ? { id: g.id, ...g.attributes } : g;
+          // IMPORTANT: Strapi 5 uses documentId for URL routes (PUT/DELETE)
+          // We keep the numeric ID as .id for relations, but use .documentId for operations
+          return { 
+            ...item, 
+            numericId: item.id,
+            id: item.documentId || item.id 
+          };
+        });
         // Only show short-term goals on dashboard
         setGoals(allGoals.filter(g => !g.isLongTerm));
       }
@@ -165,15 +178,18 @@ export default function Dashboard() {
   const handleGoalSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Use numeric ID for relations, documentId for URLs
+      const workerNumericId = worker.numericId || worker.id;
       const data = {
         title: goalForm.title,
         targetAmount: parseFloat(goalForm.targetAmount),
         allocationPercentage: parseInt(goalForm.allocationPercentage),
-        tip_worker: worker.id,
+        tip_worker: workerNumericId,
         isLongTerm: false
       };
 
       if (editingGoal) {
+        // editingGoal.id is now documentId from fetchGoals
         await api.updateGoal(editingGoal.id, data);
       } else {
         await api.createGoal(data);
@@ -182,7 +198,7 @@ export default function Dashboard() {
       setIsGoalModalOpen(false);
       setEditingGoal(null);
       setGoalForm({ title: '', targetAmount: '', allocationPercentage: 0 });
-      fetchGoals(worker.id);
+      fetchGoals(workerNumericId);
     } catch (err) {
       console.error('Error saving goal', err);
     }
@@ -191,8 +207,10 @@ export default function Dashboard() {
   const deleteGoal = async (id) => {
     if (window.confirm('Are you sure you want to delete this goal?')) {
       try {
+        const workerNumericId = worker.numericId || worker.id;
+        // id passed here is documentId from our map in fetchGoals
         await api.deleteGoal(id);
-        fetchGoals(worker.id);
+        fetchGoals(workerNumericId);
       } catch (err) {
         console.error('Error deleting goal', err);
       }
