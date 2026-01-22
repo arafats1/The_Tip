@@ -34,7 +34,7 @@ export default function TipPage() {
         });
         setStep(1);
       } else {
-        setError('Worker not found. Please check the ID.');
+        setError('Recipient not found. Please check the ID.');
       }
     } catch (err) {
       setError('Connection error');
@@ -122,7 +122,7 @@ export default function TipPage() {
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input 
                     type="text"
-                    placeholder="Enter Worker ID (e.g. 9283)"
+                    placeholder="Enter Tip ID (e.g. 9283)"
                     className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 px-12 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value)}
@@ -141,7 +141,7 @@ export default function TipPage() {
                   {isProcessing ? (
                     <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <>Find Professional <Search size={20} /></>
+                    <>Find Recipient <Search size={20} /></>
                   )}
                 </button>
               </form>

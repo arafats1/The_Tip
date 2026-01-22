@@ -10,11 +10,11 @@ export default function Home() {
             Receive Tips, <span className="text-secondary">Grow Wealth.</span>
           </h1>
           <p className="text-xl text-gray-200 mb-10 max-w-2xl">
-            The privacy-first digital wallet for everyday service workers in East Africa. Receive tips via QR/NFC without sharing your phone number.
+            The privacy-first digital wallet for everyday tip recipients in East Africa. Receive tips via QR/NFC without sharing your phone number.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="/register" className="bg-secondary text-primary px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:transform hover:scale-105 transition-all outline-none">
-              Join as a Worker <ArrowRight size={20} />
+              Join as a Tip Recipient <ArrowRight size={20} />
             </a>
             <a href="/tip" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all outline-none flex items-center justify-center">
               Tip Someone
@@ -29,7 +29,7 @@ export default function Home() {
           <div>
             <h2 className="text-3xl font-bold text-primary mb-6">Tipping evolved for the digital age</h2>
             <p className="text-gray-600 mb-6 text-lg">
-              In Uganda and East Africa, cash is declining. But workers shouldn't have to share personal phone numbers to receive digital tips.
+              In Uganda and East Africa, cash is declining. But tip recipients shouldn't have to share personal phone numbers to receive digital tips.
             </p>
             <div className="space-y-4">
               <div className="flex gap-4">
@@ -106,10 +106,10 @@ export default function Home() {
       <section className="py-20 px-6 text-center">
         <div className="max-w-3xl mx-auto bg-primary rounded-[2rem] p-12 text-white">
           <h2 className="text-3xl font-bold mb-6">Ready to grow your tips?</h2>
-          <p className="text-gray-300 mb-8">Join thousands of service workers getting ahead with The Tip.</p>
-          <button className="bg-white text-primary px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all outline-none">
-            Join Waitlist
-          </button>
+          <p className="text-gray-300 mb-8">Join thousands of tip recipients getting ahead with The Tip.</p>
+          <a href="/register" className="bg-white text-primary px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all outline-none inline-block">
+            Get Started
+          </a>
         </div>
       </section>
     </div>

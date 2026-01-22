@@ -69,8 +69,8 @@ export default function RootLayout({ children }) {
                   <a href="/login" className="text-primary px-5 py-2 rounded-full font-semibold hover:bg-gray-50 transition-all flex items-center gap-2">
                     <LogIn size={16} /> Sign In
                   </a>
-                  <a href="/register" className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
-                    Register
+                  <a href="/register" className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all text-center">
+                    Join as Recipient
                   </a>
                 </div>
               )}

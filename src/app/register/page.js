@@ -86,7 +86,7 @@ export default function RegisterPage() {
             Start your <span className="text-secondary">financial journey</span> today.
           </h1>
           <p className="text-xl text-indigo-100 max-w-md">
-            Join thousands of service professionals in Uganda receiving digital tips securely and growing their wealth.
+            Join thousands of professionals in Uganda receiving digital tips securely and growing their wealth.
           </p>
         </div>
 
@@ -181,14 +181,14 @@ export default function RegisterPage() {
                       <option value="driver">Taxi Driver</option>
                       <option value="hotel">Hotel Staff</option>
                       <option value="guide">Tour Guide</option>
-                      <option value="other">Other Service Worker</option>
+                      <option value="other">Other Recipient Role</option>
                     </select>
                   </div>
                 </div>
 
                 {formData.occupation === 'other' && (
                   <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Please specify your service area</label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Please specify your role</label>
                     <textarea 
                       required
                       placeholder="e.g. Saloon Stylist, Mechanic..."
