@@ -8,6 +8,10 @@ export default function TipPage() {
   const [step, setStep] = useState(0); // 0: Find, 1: Amount, 2: Payment Method, 3: Success
   const [searchId, setSearchId] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'momo' or 'card'
+  const [momoNumber, setMomoNumber] = useState('');
+  const [cardData, setCardData] = useState({ number: '', expiry: '', cvv: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [worker, setWorker] = useState(null);
 
@@ -27,6 +31,16 @@ export default function TipPage() {
 
   const handleNext = () => {
     if (amount) setStep(step + 1);
+  };
+
+  const handlePayment = (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsProcessing(false);
+      setStep(3);
+    }, 2000);
   };
 
   return (
@@ -156,32 +170,119 @@ export default function TipPage() {
             )}
 
             {step === 2 && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-left ml-1">Select Payment Method</p>
-                <button onClick={() => setStep(3)} className="w-full flex items-center justify-between p-5 bg-white border-2 border-gray-100 rounded-2xl hover:border-accent hover:bg-emerald-50/30 transition-all group shadow-sm">
-                   <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:text-white transition-colors">
-                        <Smartphone size={24} />
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {!paymentMethod ? (
+                  <>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-left ml-1">Select Payment Method</p>
+                    <button onClick={() => setPaymentMethod('momo')} className="w-full flex items-center justify-between p-5 bg-white border-2 border-gray-100 rounded-2xl hover:border-accent hover:bg-emerald-50/30 transition-all group shadow-sm">
+                       <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:text-white transition-colors">
+                            <Smartphone size={24} />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-bold text-primary">Mobile Money</p>
+                            <p className="text-xs text-gray-400">MTN & Airtel Africa</p>
+                          </div>
+                       </div>
+                       <ArrowRight className="text-gray-300 group-hover:text-accent transition-colors" size={20} />
+                    </button>
+                    <button onClick={() => setPaymentMethod('card')} className="w-full flex items-center justify-between p-5 bg-white border-2 border-gray-100 rounded-2xl hover:border-accent hover:bg-emerald-50/30 transition-all group shadow-sm">
+                       <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:text-white transition-colors">
+                            <CreditCard size={24} />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-bold text-primary">Card Payment</p>
+                            <p className="text-xs text-gray-400">Visa / Mastercard</p>
+                          </div>
+                       </div>
+                       <ArrowRight className="text-gray-300 group-hover:text-accent transition-colors" size={20} />
+                    </button>
+                  </>
+                ) : (
+                  <form onSubmit={handlePayment} className="space-y-6 text-left">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        {paymentMethod === 'momo' ? 'Mobile Money Details' : 'Card Details'}
+                      </p>
+                      <button 
+                        type="button" 
+                        onClick={() => setPaymentMethod(null)}
+                        className="text-xs font-bold text-primary hover:underline"
+                      >
+                        Change Method
+                      </button>
+                    </div>
+
+                    {paymentMethod === 'momo' ? (
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          <input 
+                            required
+                            type="tel"
+                            placeholder="Enter MoMo Number (e.g. 077...)"
+                            className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 px-12 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
+                            value={momoNumber}
+                            onChange={(e) => setMomoNumber(e.target.value)}
+                          />
+                        </div>
+                        <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                           <p className="text-xs text-primary font-medium leading-relaxed">
+                             <span className="font-bold">Note:</span> You will receive a prompt on your phone to authorize the transaction after clicking "Pay Now".
+                           </p>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <p className="font-bold text-primary">Mobile Money</p>
-                        <p className="text-xs text-gray-400">MTN & Airtel Africa</p>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                          <input 
+                            required
+                            type="text"
+                            placeholder="Card Number"
+                            className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 px-12 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
+                            value={cardData.number}
+                            onChange={(e) => setCardData({...cardData, number: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            required
+                            type="text"
+                            placeholder="MM/YY"
+                            className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
+                            value={cardData.expiry}
+                            onChange={(e) => setCardData({...cardData, expiry: e.target.value})}
+                          />
+                          <input 
+                            required
+                            type="text"
+                            placeholder="CVV"
+                            className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400 transition-all"
+                            value={cardData.cvv}
+                            onChange={(e) => setCardData({...cardData, cvv: e.target.value})}
+                          />
+                        </div>
                       </div>
-                   </div>
-                   <ArrowRight className="text-gray-300 group-hover:text-accent transition-colors" size={20} />
-                </button>
-                <button onClick={() => setStep(3)} className="w-full flex items-center justify-between p-5 bg-white border-2 border-gray-100 rounded-2xl hover:border-accent hover:bg-emerald-50/30 transition-all group shadow-sm">
-                   <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-accent group-hover:text-white transition-colors">
-                        <CreditCard size={24} />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-bold text-primary">Card Payment</p>
-                        <p className="text-xs text-gray-400">Visa / Mastercard</p>
-                      </div>
-                   </div>
-                   <ArrowRight className="text-gray-300 group-hover:text-accent transition-colors" size={20} />
-                </button>
+                    )}
+
+                    <button 
+                      type="submit"
+                      disabled={isProcessing}
+                      className="w-full bg-accent text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-lg shadow-emerald-100 disabled:opacity-70"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        `Pay UGX ${Number(amount).toLocaleString()} now`
+                      )}
+                    </button>
+                  </form>
+                )}
               </div>
             )}
 
@@ -218,7 +319,15 @@ export default function TipPage() {
             </div>
 
             <button 
-              onClick={() => {setStep(0); setAmount(''); setSearchId(''); setWorker(null);}}
+              onClick={() => {
+                setStep(0); 
+                setAmount(''); 
+                setSearchId(''); 
+                setWorker(null); 
+                setPaymentMethod(null);
+                setMomoNumber('');
+                setCardData({ number: '', expiry: '', cvv: '' });
+              }}
               className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100"
             >
               Back to Start
