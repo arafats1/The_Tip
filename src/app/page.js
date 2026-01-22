@@ -10,7 +10,7 @@ export default function Home() {
             Receive Tips, <span className="text-secondary">Grow Wealth.</span>
           </h1>
           <p className="text-xl text-gray-200 mb-10 max-w-2xl">
-            The privacy-first digital wallet for everyday tip recipients in East Africa. Receive tips via QR/NFC without sharing your phone number.
+            The privacy-first digital wallet for everyday tip recipients in East Africa. Receive tips via QR or Unique Tip ID without sharing your phone number.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="/register" className="bg-secondary text-primary px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:transform hover:scale-105 transition-all outline-none">
