@@ -15,6 +15,8 @@ export default function GoalsPage() {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [fundAmount, setFundAmount] = useState('');
   const [fundMethod, setFundMethod] = useState('wallet'); // 'wallet' or 'momo'
+  const [momoPhoneMode, setMomoPhoneMode] = useState('registered'); // 'registered' or 'other'
+  const [customPhone, setCustomPhone] = useState('');
   
   const [goalForm, setGoalForm] = useState({
     title: '',
@@ -80,12 +82,15 @@ export default function GoalsPage() {
 
       const transactionData = {
         amount: parseFloat(fundAmount),
-        method: fundMethod === 'wallet' ? 'momo' : 'momo', // Defaulting to momo for type enum, we'll handle deduction in lifecycle
+        method: 'momo',
         type: fundMethod === 'wallet' ? 'goal-deposit-wallet' : 'goal-deposit-momo',
         tip_worker: worker.id,
         tip_goal: selectedGoal.id,
         senderName: worker.fullName,
-        status: 'completed'
+        status: 'completed',
+        metadata: fundMethod === 'momo' ? {
+          phone: momoPhoneMode === 'registered' ? worker.phone : customPhone
+        } : {}
       };
 
       await api.createTransaction(transactionData);
@@ -383,10 +388,48 @@ export default function GoalsPage() {
                     className={`p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${fundMethod === 'momo' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 text-gray-400'}`}
                   >
                     <ShieldCheck size={20} /> 
-                    <div className="text-xs">MoMo / Card</div>
+                    <div className="text-xs">MoMo</div>
                   </button>
                 </div>
               </div>
+
+              {fundMethod === 'momo' && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <label className="text-sm font-bold text-gray-700 block">Withdraw money from:</label>
+                  <div className="space-y-2">
+                    <button 
+                      type="button"
+                      onClick={() => setMomoPhoneMode('registered')}
+                      className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center justify-between ${momoPhoneMode === 'registered' ? 'border-primary bg-white text-primary' : 'border-transparent text-gray-500'}`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold">Registered Number</span>
+                        <span className="text-[10px] opacity-60">{worker.phone}</span>
+                      </div>
+                      {momoPhoneMode === 'registered' && <div className="w-2 h-2 bg-primary rounded-full"></div>}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setMomoPhoneMode('other')}
+                      className={`w-full p-3 rounded-xl border-2 text-left transition-all flex items-center justify-between ${momoPhoneMode === 'other' ? 'border-primary bg-white text-primary' : 'border-transparent text-gray-500'}`}
+                    >
+                      <span className="text-xs font-bold">Use Different Number</span>
+                      {momoPhoneMode === 'other' && <div className="w-2 h-2 bg-primary rounded-full"></div>}
+                    </button>
+                  </div>
+                  
+                  {momoPhoneMode === 'other' && (
+                    <input 
+                      required
+                      type="tel"
+                      placeholder="e.g. 0770000000"
+                      className="w-full bg-white border-2 border-gray-100 focus:border-primary p-3 rounded-xl outline-none text-sm font-bold text-primary animate-in zoom-in-95 duration-200"
+                      value={customPhone}
+                      onChange={(e) => setCustomPhone(e.target.value)}
+                    />
+                  )}
+                </div>
+              )}
 
               <button 
                 type="submit"
