@@ -14,15 +14,16 @@ export default function Dashboard() {
       if (savedWorker) {
         const localData = JSON.parse(savedWorker);
         try {
-          // Fetch latest data from server
-          const result = await api.getWorker(localData.id);
+          // Use documentId for Strapi 5, fallback to id
+          const workerId = localData.documentId || localData.document_id || localData.id;
+          const result = await api.getWorker(workerId);
           
           let updatedData = null;
-          // Handle both Strapi v4 (nested) and Strapi v5 (flat) formats
+          // Handle Strapi 5 response format
           if (result.data) {
-            updatedData = { ...localData, ...result.data.attributes, id: result.data.id };
+            updatedData = { ...localData, ...result.data, documentId: result.data.documentId || result.data.id };
           } else if (result.id) {
-            updatedData = { ...localData, ...result };
+            updatedData = { ...localData, ...result, documentId: result.documentId || result.id };
           }
 
           if (updatedData) {

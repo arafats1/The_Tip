@@ -22,7 +22,11 @@ export default function LoginPage() {
       const result = await api.loginWorker(formData.phone, formData.pin);
       
       if (result.worker) {
-        localStorage.setItem('tip_worker', JSON.stringify(result.worker));
+        const workerData = {
+          ...result.worker,
+          documentId: result.worker.documentId || result.worker.document_id || result.worker.id
+        };
+        localStorage.setItem('tip_worker', JSON.stringify(workerData));
         window.location.href = '/dashboard';
       } else {
         setError(result.error || 'Invalid phone or PIN');

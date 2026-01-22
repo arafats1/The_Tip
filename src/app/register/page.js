@@ -47,16 +47,18 @@ export default function RegisterPage() {
         
         let workerData = null;
         if (result.data) {
-          // Strapi v4 format
+          // Strapi v4/v5 nested format
           workerData = {
             id: result.data.id,
-            ...result.data.attributes,
-            tipId: result.data.attributes.tipId || 'Pending'
+            documentId: result.data.documentId || result.data.id,
+            ...result.data,
+            tipId: result.data.tipId || 'Pending'
           };
         } else if (result.id) {
           // Strapi v5 flat format
           workerData = {
             ...result,
+            documentId: result.documentId || result.id,
             tipId: result.tipId || 'Pending'
           };
         }
