@@ -15,6 +15,17 @@ export default function Dashboard() {
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Transfer Modals (Withdraw/Send)
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [sendForm, setSendForm] = useState({
+    amount: '',
+    network: 'MTN',
+    phone: ''
+  });
+
   // Goal Modal State
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -166,6 +177,69 @@ export default function Dashboard() {
     }
   };
 
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount <= 0) return;
+    if (amount > worker.balance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    setTransferLoading(true);
+    try {
+      const newBalance = worker.balance - amount;
+      const workerId = worker.documentId || worker.id;
+      await api.updateWorker(workerId, { balance: newBalance });
+      
+      // Update local state
+      setWorker({ ...worker, balance: newBalance });
+      setIsWithdrawModalOpen(false);
+      setWithdrawAmount('');
+      fetchTransactions(worker.id);
+      alert('Withdrawal successful! Funds sent to ' + worker.phone);
+    } catch (err) {
+      console.error('Withdraw error', err);
+      alert('Withdrawal failed. Please try again.');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    const amount = parseFloat(sendForm.amount);
+    if (!amount || amount <= 0) return;
+    if (amount > worker.balance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    if (!sendForm.phone || sendForm.phone.length < 10) {
+      alert('Invalid recipient phone number');
+      return;
+    }
+
+    setTransferLoading(true);
+    try {
+      const newBalance = worker.balance - amount;
+      const workerId = worker.documentId || worker.id;
+      await api.updateWorker(workerId, { balance: newBalance });
+      
+      // Update local state
+      setWorker({ ...worker, balance: newBalance });
+      setIsSendModalOpen(false);
+      setSendForm({ amount: '', network: 'MTN', phone: '' });
+      fetchTransactions(worker.id);
+      alert(`Sent UGX ${amount.toLocaleString()} to ${sendForm.phone} (${sendForm.network})`);
+    } catch (err) {
+      console.error('Send error', err);
+      alert('Transfer failed. Please try again.');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
   const totalAllocated = goals.reduce((sum, g) => sum + (g.allocationPercentage || 0), 0);
   const availablePercentage = 100 - (totalAllocated - (editingGoal ? editingGoal.allocationPercentage : 0));
 
@@ -196,10 +270,16 @@ export default function Dashboard() {
             <p className="text-gray-300 mb-2 font-medium">Hello, {worker.fullName}</p>
             <h2 className="text-3xl md:text-5xl font-bold">UGX {parseFloat(worker.balance || 0).toLocaleString()}</h2>
             <div className="flex gap-3 md:gap-4 mt-6">
-               <button className="flex-1 md:flex-none bg-white text-primary px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
+               <button 
+                onClick={() => setIsWithdrawModalOpen(true)}
+                className="flex-1 md:flex-none bg-white text-primary px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2"
+               >
                  <ArrowDownLeft size={16} /> Withdraw
                </button>
-               <button className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
+               <button 
+                onClick={() => setIsSendModalOpen(true)}
+                className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2"
+               >
                  <ArrowUpRight size={16} /> Send
                </button>
                <a href="/investments" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
@@ -517,6 +597,126 @@ export default function Dashboard() {
                  <p className="text-[10px] text-secondary font-bold">PRO TIP: Print this QR code and display it for customers!</p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Modal */}
+      {isWithdrawModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-6 relative animate-in zoom-in duration-300 shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold text-primary">Withdraw</h2>
+              <button onClick={() => setIsWithdrawModalOpen(false)} className="text-gray-400 hover:text-primary p-2">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleWithdraw} className="space-y-6">
+              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                <p className="text-xs text-primary font-medium">Funds will be sent to your registered number:</p>
+                <p className="text-lg font-bold text-primary mt-1">{worker.phone}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">How much to withdraw?</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="number"
+                    placeholder="Enter amount"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary transition-all"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">UGX</span>
+                </div>
+                <p className="text-[10px] text-gray-400 ml-1">Max: UGX {parseFloat(worker.balance || 0).toLocaleString()}</p>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={transferLoading || !withdrawAmount || parseFloat(withdrawAmount) > worker.balance}
+                className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 transition-all shadow-lg disabled:opacity-50"
+              >
+                {transferLoading ? 'Processing...' : 'Confirm Withdrawal'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Send Modal */}
+      {isSendModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-6 relative animate-in zoom-in duration-300 shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold text-primary">Send Money</h2>
+              <button onClick={() => setIsSendModalOpen(false)} className="text-gray-400 hover:text-primary p-2">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSend} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Select Network</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {['MTN', 'Airtel'].map((net) => (
+                    <button
+                      key={net}
+                      type="button"
+                      onClick={() => setSendForm({ ...sendForm, network: net })}
+                      className={`p-3 rounded-xl font-bold text-sm border-2 transition-all ${
+                        sendForm.network === net 
+                          ? 'border-primary bg-primary/5 text-primary' 
+                          : 'border-gray-100 text-gray-400 hover:border-gray-200'
+                      }`}
+                    >
+                      {net} Money
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Recipient Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input 
+                    required
+                    type="tel"
+                    placeholder="e.g. 0770 000 000"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 pl-12 rounded-2xl outline-none font-bold text-primary transition-all"
+                    value={sendForm.phone}
+                    onChange={(e) => setSendForm({ ...sendForm, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Amount to Send</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="number"
+                    placeholder="Enter amount"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary transition-all"
+                    value={sendForm.amount}
+                    onChange={(e) => setSendForm({ ...sendForm, amount: e.target.value })}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">UGX</span>
+                </div>
+                <p className="text-[10px] text-gray-400 ml-1">Max: UGX {parseFloat(worker.balance || 0).toLocaleString()}</p>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={transferLoading || !sendForm.amount || parseFloat(sendForm.amount) > worker.balance || !sendForm.phone}
+                className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 transition-all shadow-lg disabled:opacity-50"
+              >
+                {transferLoading ? 'Processing...' : 'Send Money'}
+              </button>
+            </form>
           </div>
         </div>
       )}

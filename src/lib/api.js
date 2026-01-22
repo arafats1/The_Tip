@@ -30,6 +30,15 @@ export const api = {
     return response.json();
   },
 
+  updateWorker: async (workerId, data) => {
+    const response = await fetch(`${API_URL}/tip-workers/${workerId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    });
+    return response.json();
+  },
+
   // Transactions
   createTransaction: async (data) => {
     const response = await fetch(`${API_URL}/tip-transactions/public`, {
