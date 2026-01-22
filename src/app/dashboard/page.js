@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X, Download, Share2, Copy, Check } from 'lucide-react';
 import { api } from '@/lib/api';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
@@ -435,17 +435,18 @@ export default function Dashboard() {
               </div>
 
               <div className="bg-gray-50 p-6 rounded-[2rem] inline-block border border-gray-100 flex flex-col items-center gap-4">
-                <QRCodeSVG 
+                <QRCodeCanvas 
+                  id="tip-qr-code"
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/tip?id=${worker.tipId}`} 
-                  size={180}
+                  size={200}
                   level="H"
                   includeMargin={true}
                   imageSettings={{
                     src: "/favicon.ico",
                     x: undefined,
                     y: undefined,
-                    height: 35,
-                    width: 35,
+                    height: 40,
+                    width: 40,
                     excavate: true,
                   }}
                 />
@@ -480,23 +481,13 @@ export default function Dashboard() {
                   <button 
                     className="flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-2xl font-bold text-xs hover:bg-opacity-90 transition-all shadow-md"
                     onClick={() => {
-                      const svg = document.querySelector('svg');
-                      if (svg) {
-                        const svgData = new XMLSerializer().serializeToString(svg);
-                        const canvas = document.createElement("canvas");
-                        const ctx = canvas.getContext("2d");
-                        const img = new Image();
-                        img.onload = () => {
-                          canvas.width = img.width;
-                          canvas.height = img.height;
-                          ctx.drawImage(img, 0, 0);
-                          const pngFile = canvas.toDataURL("image/png");
-                          const downloadLink = document.createElement("a");
-                          downloadLink.download = `tip-qr-${worker.tipId}.png`;
-                          downloadLink.href = pngFile;
-                          downloadLink.click();
-                        };
-                        img.src = "data:image/svg+xml;base64," + btoa(svgData);
+                      const canvas = document.getElementById('tip-qr-code');
+                      if (canvas) {
+                        const pngFile = canvas.toDataURL("image/png");
+                        const downloadLink = document.createElement("a");
+                        downloadLink.download = `tip-qr-${worker.tipId}.png`;
+                        downloadLink.href = pngFile;
+                        downloadLink.click();
                       }
                     }}
                   >
