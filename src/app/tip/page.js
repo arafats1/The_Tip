@@ -30,7 +30,7 @@ export default function TipPage() {
           role: result.occupation,
           location: result.city,
           id: result.tipId,
-          rawId: result.id
+          rawId: result.documentId || result.id // Prefer documentID for Strapi 5 relations
         });
         setStep(1);
       } else {
