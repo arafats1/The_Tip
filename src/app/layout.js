@@ -20,10 +20,10 @@ export default function RootLayout({ children }) {
             <span className="text-primary font-bold text-xl tracking-tight">The Tip</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-gray-600 font-medium">
-            <a href="/" className="hover:text-primary">Home</a>
-            <a href="/dashboard" className="hover:text-primary">Dashboard</a>
-            <a href="/goals" className="hover:text-primary">Goals</a>
-            <a href="/invest" className="hover:text-primary">Invest</a>
+            <a href="/" className="hover:text-primary transition-colors">Home</a>
+            <a href="/dashboard" className="hover:text-primary transition-colors">Dashboard</a>
+            <a href="/goals" className="hover:text-primary transition-colors">Goals & Invest</a>
+            <a href="/tip" className="hover:text-primary transition-colors">Sample Tip Page</a>
           </div>
           <button className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
             Get Started
