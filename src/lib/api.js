@@ -47,7 +47,32 @@ export const api = {
 
   // Goals
   getGoals: async (workerId) => {
-    const response = await fetch(`${API_URL}/tip-goals?filters[tip_worker][id][$eq]=${workerId}`);
+    const response = await fetch(`${API_URL}/tip-goals?filters[tip_worker][id][$eq]=${workerId}&sort=createdAt:desc`);
+    return response.json();
+  },
+
+  createGoal: async (data) => {
+    const response = await fetch(`${API_URL}/tip-goals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    });
+    return response.json();
+  },
+
+  updateGoal: async (id, data) => {
+    const response = await fetch(`${API_URL}/tip-goals/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    });
+    return response.json();
+  },
+
+  deleteGoal: async (id) => {
+    const response = await fetch(`${API_URL}/tip-goals/${id}`, {
+      method: 'DELETE',
+    });
     return response.json();
   }
 };
