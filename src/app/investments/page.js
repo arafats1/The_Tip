@@ -47,13 +47,18 @@ export default function InvestmentsPage() {
       const result = await api.getGoals(workerId);
       if (result.data) {
         const allGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
-        // Only show long term goals on this page
+        // Only show long term goals on this page (both financial and micro-investments)
         setGoals(allGoals.filter(g => g.isLongTerm));
       }
     } catch (err) {
       console.error('Failed to fetch goals', err);
     }
   };
+
+  const microInvestments = goals.filter(g => g.isMicroInvestment);
+  const financialGoals = goals.filter(g => !g.isMicroInvestment);
+  const investedBalance = microInvestments.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0);
+  const financialGoalsTotal = financialGoals.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0);
 
   const handleCreateGoal = async (e) => {
     e.preventDefault();
@@ -96,10 +101,10 @@ export default function InvestmentsPage() {
             title: fundTitle,
             targetAmount: 10000000, // Default 10M target for funds
             isLongTerm: true,
+            isMicroInvestment: true,
             tip_worker: worker.id
           };
           const response = await api.createGoal(newGoalData);
-          // Strapi 5 might return data.id or just id depending on the wrapper
           targetGoalId = response.data?.id || response.id;
         }
       }
@@ -188,12 +193,12 @@ export default function InvestmentsPage() {
 
           <div className="space-y-4">
              {/* Dynamic Goal cards */}
-             {goals.length === 0 ? (
+             {financialGoals.length === 0 ? (
                <div className="text-center py-8 text-gray-400 bg-white rounded-3xl border-2 border-dashed border-gray-100">
                  <p className="font-bold">No financial goals set yet</p>
                </div>
              ) : (
-               goals.map((goal) => {
+               financialGoals.map((goal) => {
                  const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100) || 0);
                  return (
                    <div key={goal.id} className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 card-shadow space-y-4">
@@ -263,7 +268,7 @@ export default function InvestmentsPage() {
              <div className="bg-white/5 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                <div>
                  <p className="text-[10px] text-white/60 font-bold uppercase">Invested Balance</p>
-                 <p className="text-xl font-bold">UGX {goals.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0).toLocaleString()}</p>
+                 <p className="text-xl font-bold">UGX {investedBalance.toLocaleString()}</p>
                </div>
                <div className="text-[#3ed5a2] font-bold text-sm bg-white p-2 px-3 rounded-lg">+8.2% total gain</div>
              </div>
@@ -271,32 +276,42 @@ export default function InvestmentsPage() {
 
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Available Fund Managers</p>
-            {funds.map((fund, idx) => (
-              <div 
-                key={idx} 
-                onClick={() => {
-                  setSelectedFund(fund);
-                  setSelectedGoal(null); // Clear selected goal
-                  setIsAddFundsModalOpen(true);
-                }}
-                className="bg-white p-4 rounded-2xl border border-gray-50 flex items-center justify-between hover:border-accent hover:bg-accent/5 cursor-pointer transition-all card-shadow"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">{fund.icon}</div>
-                  <div>
-                    <h4 className="font-bold text-primary text-sm">{fund.name}</h4>
-                    <p className="text-[10px] text-gray-500">{fund.manager} • {fund.risk} Risk</p>
+            {funds.map((fund, idx) => {
+              const fundTitle = `${fund.manager} ${fund.name}`;
+              const fundData = microInvestments.find(g => g.title === fundTitle);
+              const balance = parseFloat(fundData?.currentAmount || 0);
+
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => {
+                    setSelectedFund(fund);
+                    setSelectedGoal(null); // Clear selected goal
+                    setIsAddFundsModalOpen(true);
+                  }}
+                  className="bg-white p-4 rounded-2xl border border-gray-50 flex items-center justify-between hover:border-accent hover:bg-accent/5 cursor-pointer transition-all card-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">{fund.icon}</div>
+                    <div>
+                      <h4 className="font-bold text-primary text-sm">{fund.name}</h4>
+                      <p className="text-[10px] text-gray-500">{fund.manager} • {fund.risk} Risk</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex items-center gap-3">
+                    <div className="text-right">
+                      {balance > 0 ? (
+                        <p className="text-sm font-bold text-primary">UGX {balance.toLocaleString()}</p>
+                      ) : (
+                        <p className="text-accent font-bold text-sm">{fund.yield}</p>
+                      )}
+                      <p className="text-[10px] text-gray-400">{balance > 0 ? 'Current Balance' : 'Target yield'}</p>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-300" />
                   </div>
                 </div>
-                <div className="text-right flex items-center gap-2">
-                  <div className="mr-2">
-                    <p className="text-accent font-bold text-sm">{fund.yield}</p>
-                    <p className="text-[10px] text-gray-400">Target yield</p>
-                  </div>
-                  <ChevronRight size={16} className="text-gray-300" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="bg-blue-50 p-4 rounded-2xl flex gap-3">
