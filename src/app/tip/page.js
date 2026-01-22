@@ -66,29 +66,8 @@ export default function TipPage() {
     // Clean ID: uppercase, trim, alphanumeric only
     const cleanId = id.toUpperCase().trim().replace(/[^A-Z0-9]/g, '');
     setSearchId(cleanId);
-    
     setError('');
-    setIsProcessing(true);
-    try {
-      const result = await api.lookupWorker(cleanId);
-      if (result && !result.error && result.fullName) {
-        setWorker({
-          name: result.fullName,
-          role: result.occupation,
-          location: result.city,
-          id: result.tipId,
-          rawId: result.documentId || result.id
-        });
-        setStep(1);
-      } else {
-        setError(`Recipient ID #${cleanId} not found. Please check and try again.`);
-      }
-    } catch (err) {
-      console.error('Scan lookup error:', err);
-      setError('Connection error while looking up recipient.');
-    } finally {
-      setIsProcessing(false);
-    }
+    // Removed auto-trigger to allow user to press "Find Recipient" manually
   };
 
   const [paymentMethod, setPaymentMethod] = useState(null); // 'momo' or 'card'
