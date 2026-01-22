@@ -26,19 +26,43 @@ export default function TipPage() {
         config,
         (decodedText) => {
           // Success
-          let tipId = decodedText.trim();
+          let scannedContent = decodedText.trim();
+          let tipId = scannedContent;
           
-          // Handle full URLs like https://the-tip.app/tip/9283
-          if (tipId.includes('/tip/')) {
-            const parts = tipId.split('/tip/');
-            tipId = parts[parts.length - 1].split(/[/?#]/)[0];
+          // 1. If it's a URL, handle it properly
+          if (scannedContent.includes('://') || scannedContent.includes('.')) {
+            try {
+              // Ensure we have a protocol for URL parsing
+              const urlToParse = scannedContent.includes('://') ? scannedContent : `https://${scannedContent}`;
+              const url = new URL(urlToParse);
+              const pathSegments = url.pathname.split('/').filter(segment => 
+                segment.length > 0 && 
+                segment.toLowerCase() !== 'tip' && 
+                segment.toLowerCase() !== 'dashboard'
+              );
+              
+              if (pathSegments.length > 0) {
+                // Take the last meaningful segment as the ID
+                tipId = pathSegments[pathSegments.length - 1];
+              } else {
+                // If the URL has no path segments (just the domain), 
+                // it's likely a generic QR, don't use the domain as the ID.
+                tipId = '';
+              }
+            } catch (e) {
+              // Fallback for malformed URLs
+              const parts = scannedContent.split('/');
+              tipId = parts.pop() || parts.pop() || '';
+            }
           } 
-          // Handle tip:9283 format
-          else if (tipId.toLowerCase().startsWith('tip:')) {
-            tipId = tipId.split(':')[1].trim();
+          
+          // 2. Clean prefixes from the result (tip:9283 -> 9283)
+          if (tipId.toLowerCase().startsWith('tip:')) {
+            tipId = tipId.split(':')[1];
           }
-          // Remove any leading #
-          tipId = tipId.replace(/^#/, '');
+          
+          // 3. Final cleaning (remove leading #)
+          tipId = tipId.replace(/^#/, '').trim();
           
           if (tipId) {
             handleScanSuccess(tipId);
