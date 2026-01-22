@@ -159,6 +159,15 @@ export default function Dashboard() {
   const totalAllocated = goals.reduce((sum, g) => sum + (g.allocationPercentage || 0), 0);
   const availablePercentage = 100 - (totalAllocated - (editingGoal ? editingGoal.allocationPercentage : 0));
 
+  const formatNumber = (val) => {
+    if (!val) return '';
+    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const parseNumber = (val) => {
+    return val.replace(/,/g, '');
+  };
+
   if (loading || !worker) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -329,14 +338,27 @@ export default function Dashboard() {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Target Amount (UGX)</label>
-                <input 
-                  required
-                  type="number"
-                  placeholder="500,000"
-                  className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary transition-all"
-                  value={goalForm.targetAmount}
-                  onChange={(e) => setGoalForm({...goalForm, targetAmount: e.target.value})}
-                />
+                <div className="relative">
+                  <input 
+                    required
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="500,000"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary transition-all"
+                    value={formatNumber(goalForm.targetAmount)}
+                    onChange={(e) => {
+                      const val = parseNumber(e.target.value);
+                      if (/^\d*$/.test(val)) {
+                        setGoalForm({...goalForm, targetAmount: val});
+                      }
+                    }}
+                  />
+                  {goalForm.targetAmount && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                      UGX
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">

@@ -1,21 +1,120 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Target, TrendingUp, ShieldCheck, ChevronRight, Info } from 'lucide-react';
+import { Target, TrendingUp, ShieldCheck, ChevronRight, Info, X, Calendar, Wallet } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function GoalsPage() {
+  const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [worker, setWorker] = useState(null);
+  
+  // Modals state
+  const [isNewGoalModalOpen, setIsNewGoalModalOpen] = useState(false);
+  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [fundAmount, setFundAmount] = useState('');
+  const [fundMethod, setFundMethod] = useState('wallet'); // 'wallet' or 'momo'
+  
+  const [goalForm, setGoalForm] = useState({
+    title: '',
+    targetAmount: '',
+    deadline: '',
+    isLongTerm: true
+  });
 
   useEffect(() => {
-    const savedWorker = localStorage.getItem('tip_worker');
-    if (savedWorker) {
-      setWorker(JSON.parse(savedWorker));
-    } else {
-      window.location.href = '/login';
-    }
-    setLoading(false);
+    const fetchInitialData = async () => {
+      const savedWorker = localStorage.getItem('tip_worker');
+      if (savedWorker) {
+        const localWorker = JSON.parse(savedWorker);
+        setWorker(localWorker);
+        await fetchGoals(localWorker.id);
+      } else {
+        window.location.href = '/login';
+      }
+      setLoading(false);
+    };
+
+    fetchInitialData();
   }, []);
+
+  const fetchGoals = async (workerId) => {
+    try {
+      const result = await api.getGoals(workerId);
+      if (result.data) {
+        const formattedGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
+        // Only show long term goals on this page if they match
+        setGoals(formattedGoals);
+      }
+    } catch (err) {
+      console.error('Failed to fetch goals', err);
+    }
+  };
+
+  const handleCreateGoal = async (e) => {
+    e.preventDefault();
+    try {
+      const data = {
+        ...goalForm,
+        targetAmount: parseFloat(goalForm.targetAmount),
+        tip_worker: worker.id,
+        isLongTerm: true
+      };
+      await api.createGoal(data);
+      setIsNewGoalModalOpen(false);
+      setGoalForm({ title: '', targetAmount: '', deadline: '', isLongTerm: true });
+      fetchGoals(worker.id);
+    } catch (err) {
+      console.error('Error creating goal', err);
+    }
+  };
+
+  const handleAddFunds = async (e) => {
+    e.preventDefault();
+    try {
+      if (fundMethod === 'wallet' && worker.balance < parseFloat(fundAmount)) {
+        alert('Insufficient wallet balance');
+        return;
+      }
+
+      const transactionData = {
+        amount: parseFloat(fundAmount),
+        method: fundMethod === 'wallet' ? 'momo' : 'momo', // Defaulting to momo for type enum, we'll handle deduction in lifecycle
+        type: fundMethod === 'wallet' ? 'goal-deposit-wallet' : 'goal-deposit-momo',
+        tip_worker: worker.id,
+        tip_goal: selectedGoal.id,
+        senderName: worker.fullName,
+        status: 'completed'
+      };
+
+      await api.createTransaction(transactionData);
+      
+      // Update local worker balance if it was from wallet
+      if (fundMethod === 'wallet') {
+        const newBalance = worker.balance - parseFloat(fundAmount);
+        const updatedWorker = { ...worker, balance: newBalance };
+        setWorker(updatedWorker);
+        localStorage.setItem('tip_worker', JSON.stringify(updatedWorker));
+      }
+
+      setIsAddFundsModalOpen(false);
+      setFundAmount('');
+      fetchGoals(worker.id);
+      alert('Funds added successfully!');
+    } catch (err) {
+      console.error('Error adding funds', err);
+    }
+  };
+
+  const formatNumber = (val) => {
+    if (!val) return '';
+    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const parseNumber = (val) => {
+    return val.replace(/,/g, '');
+  };
 
   if (loading || !worker) {
     return (
@@ -51,27 +150,54 @@ export default function GoalsPage() {
 
           <div className="space-y-4">
              {/* Dynamic Goal cards */}
-             <div className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 card-shadow space-y-4">
-               <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg text-primary">New Motorbike (Boda)</h3>
-                    <p className="text-xs text-gray-400">Target: Dec 2026</p>
-                  </div>
-                  <span className="bg-accent/10 text-accent px-3 py-1 rounded-full text-[10px] font-bold">On Track</span>
+             {goals.filter(g => g.isLongTerm).length === 0 ? (
+               <div className="text-center py-8 text-gray-400 bg-white rounded-3xl border-2 border-dashed border-gray-100">
+                 <p className="font-bold">No financial goals set yet</p>
                </div>
-               <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-                 <div className="bg-accent h-full w-[15%] rounded-full"></div>
-               </div>
-               <div className="flex justify-between items-end">
-                 <div>
-                   <p className="text-lg font-bold text-primary">UGX 450,000</p>
-                   <p className="text-[10px] text-gray-400">Saved of UGX 3,000,000</p>
-                 </div>
-                 <button className="text-accent font-bold text-sm bg-accent/5 px-4 py-2 rounded-xl">Add Funds</button>
-               </div>
-             </div>
+             ) : (
+               goals.filter(g => g.isLongTerm).map((goal) => {
+                 const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100) || 0);
+                 return (
+                   <div key={goal.id} className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 card-shadow space-y-4">
+                     <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-lg text-primary">{goal.title}</h3>
+                          <p className="text-xs text-gray-400">Target: {goal.deadline ? new Date(goal.deadline).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : 'No deadline'}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${progress >= 100 ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'}`}>
+                          {progress >= 100 ? 'Completed' : 'On Track'}
+                        </span>
+                     </div>
+                     <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+                       <div 
+                        className={`h-full rounded-full transition-all duration-1000 ${progress >= 100 ? 'bg-secondary' : 'bg-accent'}`}
+                        style={{ width: `${progress}%` }}
+                       ></div>
+                     </div>
+                     <div className="flex justify-between items-end">
+                       <div>
+                         <p className="text-lg font-bold text-primary">UGX {parseFloat(goal.currentAmount || 0).toLocaleString()}</p>
+                         <p className="text-[10px] text-gray-400">Saved of UGX {parseFloat(goal.targetAmount).toLocaleString()}</p>
+                       </div>
+                       <button 
+                        onClick={() => {
+                          setSelectedGoal(goal);
+                          setIsAddFundsModalOpen(true);
+                        }}
+                        className="text-accent font-bold text-sm bg-accent/5 px-4 py-2 rounded-xl hover:bg-accent hover:text-white transition-all"
+                       >
+                        Add Funds
+                       </button>
+                     </div>
+                   </div>
+                 );
+               })
+             )}
 
-             <button className="w-full py-6 md:py-8 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold hover:border-accent hover:text-accent transition-all flex flex-col items-center gap-1 md:gap-2">
+             <button 
+              onClick={() => setIsNewGoalModalOpen(true)}
+              className="w-full py-6 md:py-8 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold hover:border-accent hover:text-accent transition-all flex flex-col items-center gap-1 md:gap-2"
+             >
                 <span className="text-2xl">+</span>
                 <span className="text-sm">Create a new goal</span>
              </button>
@@ -129,6 +255,149 @@ export default function GoalsPage() {
           </div>
         </div>
       </div>
+
+      {/* New Goal Modal */}
+      {isNewGoalModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 relative animate-in zoom-in duration-300">
+            <button 
+              onClick={() => setIsNewGoalModalOpen(false)}
+              className="absolute right-6 top-6 text-gray-400 hover:text-primary"
+            >
+              <X size={24} />
+            </button>
+            <h2 className="text-2xl font-bold text-primary mb-6">New Financial Goal</h2>
+            <form onSubmit={handleCreateGoal} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Goal Name</label>
+                <input 
+                  required
+                  type="text"
+                  placeholder="e.g. Land, Motorbike"
+                  className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary"
+                  value={goalForm.title}
+                  onChange={(e) => setGoalForm({...goalForm, title: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Target Amount (UGX)</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="2,000,000"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary"
+                    value={formatNumber(goalForm.targetAmount)}
+                    onChange={(e) => {
+                      const val = parseNumber(e.target.value);
+                      if (/^\d*$/.test(val)) {
+                        setGoalForm({...goalForm, targetAmount: val});
+                      }
+                    }}
+                  />
+                  {goalForm.targetAmount && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                      UGX
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Timeline (Deadline)</label>
+                <input 
+                  required
+                  type="date"
+                  className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary"
+                  value={goalForm.deadline}
+                  onChange={(e) => setGoalForm({...goalForm, deadline: e.target.value})}
+                />
+              </div>
+              <button 
+                type="submit"
+                className="w-full bg-secondary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 shadow-lg flex items-center justify-center gap-2"
+              >
+                <Target size={20} /> Create Long-term Goal
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Funds Modal */}
+      {isAddFundsModalOpen && selectedGoal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 relative animate-in zoom-in duration-300">
+            <button 
+              onClick={() => setIsAddFundsModalOpen(false)}
+              className="absolute right-6 top-6 text-gray-400 hover:text-primary"
+            >
+              <X size={24} />
+            </button>
+            <h2 className="text-2xl font-bold text-primary mb-2">Fund Goal</h2>
+            <p className="text-gray-500 mb-6 text-sm">Add money to: <span className="font-bold text-primary">{selectedGoal.title}</span></p>
+            
+            <form onSubmit={handleAddFunds} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Amount to Add (UGX)</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="50,000"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary p-4 rounded-2xl outline-none font-bold text-primary"
+                    value={formatNumber(fundAmount)}
+                    onChange={(e) => {
+                      const val = parseNumber(e.target.value);
+                      if (/^\d*$/.test(val)) {
+                        setFundAmount(val);
+                      }
+                    }}
+                  />
+                  {fundAmount && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                      UGX
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 ml-1">Funding Method</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setFundMethod('wallet')}
+                    className={`p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${fundMethod === 'wallet' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 text-gray-400'}`}
+                  >
+                    <Wallet size={20} /> 
+                    <div className="text-xs text-center">
+                      Wallet
+                      <p className="text-[10px] opacity-60">Bal: UGX {worker.balance.toLocaleString()}</p>
+                    </div>
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setFundMethod('momo')}
+                    className={`p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${fundMethod === 'momo' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 text-gray-400'}`}
+                  >
+                    <ShieldCheck size={20} /> 
+                    <div className="text-xs">MoMo / Card</div>
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-accent text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 shadow-lg"
+              >
+                Confirm Deposit
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
