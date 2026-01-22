@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heart, ShieldCheck, CreditCard, Smartphone, QrCode, Search, User, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export default function TipPage() {
+  const router = useRouter();
   const [amount, setAmount] = useState('');
   const [step, setStep] = useState(0); // 0: Find, 1: Amount, 2: Payment Method, 3: Success
   const [searchId, setSearchId] = useState('');
@@ -372,18 +374,10 @@ export default function TipPage() {
             </div>
 
             <button 
-              onClick={() => {
-                setStep(0); 
-                setAmount(''); 
-                setSearchId(''); 
-                setWorker(null); 
-                setPaymentMethod(null);
-                setMomoNumber('');
-                setCardData({ number: '', expiry: '', cvv: '' });
-              }}
+              onClick={() => router.push('/')}
               className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 transition-all shadow-lg shadow-indigo-100"
             >
-              Back to Start
+              Return Home
             </button>
           </div>
         )}
