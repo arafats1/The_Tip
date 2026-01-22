@@ -1,4 +1,7 @@
+'use client';
+
 import { ArrowRight, Shield, Wallet, TrendingUp, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function Home() {
   return (
@@ -52,12 +55,29 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-white p-8 rounded-3xl card-shadow border border-gray-100 flex flex-col items-center">
-             <div className="w-48 h-48 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 border-2 border-dashed border-gray-200">
-                <QrCode size={100} className="text-primary opacity-20" />
+          <div className="bg-white p-8 rounded-[2.5rem] card-shadow border border-gray-100 flex flex-col items-center">
+             <div className="w-48 h-48 bg-gray-50 rounded-3xl flex items-center justify-center mb-6 border-2 border-dashed border-primary/20 p-6 relative overflow-hidden group">
+                <QRCodeCanvas 
+                  value="https://the-tip.app/tip/9283"
+                  size={140}
+                  level="H"
+                  includeMargin={false}
+                  className="opacity-20 grayscale"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Example QR</span>
+                  </div>
+                </div>
              </div>
-             <p className="text-primary font-bold text-xl mb-2 text-center">Your Personal Tip QR</p>
-             <p className="text-gray-500 text-center text-sm">Customers just scan and pay. No apps needed on their end.</p>
+             <div className="text-center space-y-2">
+                <p className="text-primary font-bold text-xl">Your Personal Tip QR</p>
+                <div className="inline-block px-4 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">
+                  <span className="text-xs font-bold text-primary">Unique Tip ID: </span>
+                  <span className="text-xs font-black text-accent tracking-widest">9283</span>
+                </div>
+                <p className="text-gray-500 text-sm max-w-[200px]">Customers just scan and pay. No apps needed on their end.</p>
+             </div>
           </div>
         </div>
       </section>
