@@ -1,18 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, LogOut, LogIn } from 'lucide-react';
 import "./globals.css";
 
 export default function RootLayout({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Initial check
+    setIsLoggedIn(!!localStorage.getItem('tip_worker'));
+
+    // Check on storage update (for cross-tab sync)
+    const handleStorageChange = () => {
+      setIsLoggedIn(!!localStorage.getItem('tip_worker'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('tip_worker');
+    setIsLoggedIn(false);
+    window.location.href = '/';
+  };
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Dashboard", href: "/dashboard" },
-    { name: "Goals & Invest", href: "/goals" },
-    { name: "Tip Someone", href: "/tip" },
-  ];
+    { name: "Home", href: "/", public: true },
+    { name: "Dashboard", href: "/dashboard", public: false },
+    { name: "Goals & Invest", href: "/goals", public: false },
+    { name: "Tip Someone", href: "/tip", public: true },
+  ].filter(link => link.public || isLoggedIn);
 
   return (
     <html lang="en">
@@ -36,9 +56,24 @@ export default function RootLayout({ children }) {
                   {link.name}
                 </a>
               ))}
-              <a href="/register" className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
-                Get Started
-              </a>
+              
+              {isLoggedIn ? (
+                <button 
+                  onClick={handleLogout}
+                  className="bg-gray-100 text-gray-600 hover:text-red-500 px-5 py-2 rounded-full font-semibold transition-all flex items-center gap-2"
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              ) : (
+                <div className="flex gap-4">
+                  <a href="/login" className="text-primary px-5 py-2 rounded-full font-semibold hover:bg-gray-50 transition-all flex items-center gap-2">
+                    <LogIn size={16} /> Sign In
+                  </a>
+                  <a href="/register" className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
+                    Register
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Mobile Toggle */}
@@ -63,13 +98,32 @@ export default function RootLayout({ children }) {
                   {link.name}
                 </a>
               ))}
-              <a 
-                href="/register" 
-                className="bg-primary text-white w-full py-4 rounded-2xl font-bold mt-4 text-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Get Started
-              </a>
+              
+              {isLoggedIn ? (
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-50 text-red-600 w-full py-4 rounded-2xl font-bold mt-4 flex items-center justify-center gap-2"
+                >
+                  <LogOut size={20} /> Logout
+                </button>
+              ) : (
+                <>
+                  <a 
+                    href="/login" 
+                    className="border-2 border-primary text-primary w-full py-4 rounded-2xl font-bold mt-4 text-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </a>
+                  <a 
+                    href="/register" 
+                    className="bg-primary text-white w-full py-4 rounded-2xl font-bold mt-2 text-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Get Started Free
+                  </a>
+                </>
+              )}
             </div>
           )}
         </nav>
