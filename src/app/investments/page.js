@@ -13,6 +13,7 @@ export default function InvestmentsPage() {
   const [isNewGoalModalOpen, setIsNewGoalModalOpen] = useState(false);
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
+  const [selectedFund, setSelectedFund] = useState(null);
   const [fundAmount, setFundAmount] = useState('');
   const [fundMethod, setFundMethod] = useState('wallet'); // 'wallet' or 'momo'
   const [momoPhoneMode, setMomoPhoneMode] = useState('registered'); // 'registered' or 'other'
@@ -75,29 +76,58 @@ export default function InvestmentsPage() {
   const handleAddFunds = async (e) => {
     e.preventDefault();
     try {
-      if (fundMethod === 'wallet' && worker.balance < parseFloat(fundAmount)) {
+      const amount = parseFloat(fundAmount);
+      if (fundMethod === 'wallet' && worker.balance < amount) {
         alert('Insufficient wallet balance');
         return;
       }
 
+      let targetGoalId = selectedGoal?.id;
+
+      // If investing in a fund, find or create the goal for it
+      if (selectedFund) {
+        const fundTitle = `${selectedFund.manager} ${selectedFund.name}`;
+        const existingGoal = goals.find(g => g.title === fundTitle);
+        
+        if (existingGoal) {
+          targetGoalId = existingGoal.id;
+        } else {
+          const newGoalData = {
+            title: fundTitle,
+            targetAmount: 10000000, // Default 10M target for funds
+            isLongTerm: true,
+            tip_worker: worker.id
+          };
+          const response = await api.createGoal(newGoalData);
+          // Strapi 5 might return data.id or just id depending on the wrapper
+          targetGoalId = response.data?.id || response.id;
+        }
+      }
+
+      if (!targetGoalId) {
+        alert('Could not determine investment target');
+        return;
+      }
+
       const transactionData = {
-        amount: parseFloat(fundAmount),
+        amount: amount,
         method: 'momo',
         type: fundMethod === 'wallet' ? 'goal-deposit-wallet' : 'goal-deposit-momo',
         tip_worker: worker.id,
-        tip_goal: selectedGoal.id,
+        tip_goal: targetGoalId,
         senderName: worker.fullName,
         status: 'completed',
-        metadata: fundMethod === 'momo' ? {
-          phone: momoPhoneMode === 'registered' ? worker.phone : customPhone
-        } : {}
+        metadata: {
+          fundName: selectedFund?.name || null,
+          phone: fundMethod === 'momo' ? (momoPhoneMode === 'registered' ? worker.phone : customPhone) : null
+        }
       };
 
       await api.createTransaction(transactionData);
       
       // Update local worker balance if it was from wallet
       if (fundMethod === 'wallet') {
-        const newBalance = worker.balance - parseFloat(fundAmount);
+        const newBalance = worker.balance - amount;
         const updatedWorker = { ...worker, balance: newBalance };
         setWorker(updatedWorker);
         localStorage.setItem('tip_worker', JSON.stringify(updatedWorker));
@@ -105,10 +135,13 @@ export default function InvestmentsPage() {
 
       setIsAddFundsModalOpen(false);
       setFundAmount('');
+      setSelectedFund(null);
+      setSelectedGoal(null);
       fetchGoals(worker.id);
-      alert('Funds added successfully!');
+      alert('Investment processed successfully!');
     } catch (err) {
       console.error('Error adding funds', err);
+      alert('Failed to process investment');
     }
   };
 
@@ -221,35 +254,46 @@ export default function InvestmentsPage() {
             <h2 className="text-2xl font-bold text-primary">Micro-Investments</h2>
           </div>
 
-          <div className="bg-primary rounded-3xl p-6 text-white space-y-4 shadow-xl shadow-indigo-100/50">
+          <div className="bg-[#1a1b4b] rounded-3xl p-6 text-white space-y-4 shadow-xl shadow-indigo-100/50">
              <div className="flex items-center gap-2 text-secondary">
                <ShieldCheck size={18} />
                <span className="text-[10px] font-bold uppercase tracking-widest leading-none">Regulated by CMA Uganda</span>
              </div>
              <p className="text-sm text-gray-300 leading-relaxed">Start investing from as little as UGX 1,000. Your money is managed by professional fund managers.</p>
-             <div className="bg-white/10 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+             <div className="bg-white/5 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                <div>
                  <p className="text-[10px] text-white/60 font-bold uppercase">Invested Balance</p>
-                 <p className="text-xl font-bold">UGX 85,000</p>
+                 <p className="text-xl font-bold">UGX {goals.reduce((acc, g) => acc + (parseFloat(g.currentAmount) || 0), 0).toLocaleString()}</p>
                </div>
-               <div className="text-accent font-bold text-sm bg-white p-2 rounded-lg">+8.2% total gain</div>
+               <div className="text-[#3ed5a2] font-bold text-sm bg-white p-2 px-3 rounded-lg">+8.2% total gain</div>
              </div>
           </div>
 
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Available Fund Managers</p>
             {funds.map((fund, idx) => (
-              <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-50 card-shadow flex items-center justify-between hover:border-accent cursor-pointer transition-all">
+              <div 
+                key={idx} 
+                onClick={() => {
+                  setSelectedFund(fund);
+                  setSelectedGoal(null); // Clear selected goal
+                  setIsAddFundsModalOpen(true);
+                }}
+                className="bg-white p-4 rounded-2xl border border-gray-50 flex items-center justify-between hover:border-accent hover:bg-accent/5 cursor-pointer transition-all card-shadow"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="text-2xl">{fund.icon}</div>
+                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">{fund.icon}</div>
                   <div>
                     <h4 className="font-bold text-primary text-sm">{fund.name}</h4>
                     <p className="text-[10px] text-gray-500">{fund.manager} • {fund.risk} Risk</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-accent font-bold text-sm">{fund.yield}</p>
-                  <ChevronRight size={16} className="ml-auto text-gray-300" />
+                <div className="text-right flex items-center gap-2">
+                  <div className="mr-2">
+                    <p className="text-accent font-bold text-sm">{fund.yield}</p>
+                    <p className="text-[10px] text-gray-400">Target yield</p>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-300" />
                 </div>
               </div>
             ))}
@@ -333,17 +377,29 @@ export default function InvestmentsPage() {
       )}
 
       {/* Add Funds Modal */}
-      {isAddFundsModalOpen && selectedGoal && (
+      {isAddFundsModalOpen && (selectedGoal || selectedFund) && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 relative animate-in zoom-in duration-300">
             <button 
-              onClick={() => setIsAddFundsModalOpen(false)}
+              onClick={() => {
+                setIsAddFundsModalOpen(false);
+                setSelectedFund(null);
+                setSelectedGoal(null);
+              }}
               className="absolute right-6 top-6 text-gray-400 hover:text-primary"
             >
               <X size={24} />
             </button>
-            <h2 className="text-2xl font-bold text-primary mb-2">Fund Goal</h2>
-            <p className="text-gray-500 mb-6 text-sm">Add money to: <span className="font-bold text-primary">{selectedGoal.title}</span></p>
+            <h2 className="text-2xl font-bold text-primary mb-2">
+              {selectedFund ? 'Invest in Fund' : 'Fund Goal'}
+            </h2>
+            <p className="text-gray-500 mb-6 text-sm">
+              {selectedFund ? (
+                <>Adding capital to: <span className="font-bold text-primary">{selectedFund.manager} {selectedFund.name}</span></>
+              ) : (
+                <>Add money to: <span className="font-bold text-primary">{selectedGoal?.title}</span></>
+              )}
+            </p>
             
             <form onSubmit={handleAddFunds} className="space-y-6">
               <div className="space-y-2">
