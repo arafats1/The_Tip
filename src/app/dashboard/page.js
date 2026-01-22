@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X, Download, Share2, Copy, Check } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X, Download, Share2, Copy, Check, Phone } from 'lucide-react';
 import { api } from '@/lib/api';
 import { QRCodeCanvas } from 'qrcode.react';
 
@@ -192,6 +192,17 @@ export default function Dashboard() {
       const workerId = worker.documentId || worker.id;
       await api.updateWorker(workerId, { balance: newBalance });
       
+      // Log Withdrawal Transaction
+      await api.createTransaction({
+        amount: amount,
+        method: 'Mobile Money',
+        status: 'completed',
+        tip_worker: workerId,
+        type: 'withdrawal',
+        reference: `WD-${Date.now()}`,
+        from: 'Wallet'
+      });
+      
       // Update local state
       setWorker({ ...worker, balance: newBalance });
       setIsWithdrawModalOpen(false);
@@ -225,6 +236,18 @@ export default function Dashboard() {
       const newBalance = worker.balance - amount;
       const workerId = worker.documentId || worker.id;
       await api.updateWorker(workerId, { balance: newBalance });
+      
+      // Log Send Transaction
+      await api.createTransaction({
+        amount: amount,
+        method: sendForm.network,
+        status: 'completed',
+        tip_worker: workerId,
+        type: 'transfer',
+        reference: `TR-${Date.now()}`,
+        from: 'Wallet',
+        recipient: sendForm.phone
+      });
       
       // Update local state
       setWorker({ ...worker, balance: newBalance });
