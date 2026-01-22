@@ -10,14 +10,6 @@ export const metadata = {
     description: "The privacy-first digital wallet for everyday tip recipients in East Africa. Receive tips via QR or ID securely.",
     url: "/",
     siteName: "The Tip",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: 'The Tip - Digital Wallet',
-      },
-    ],
     locale: "en_UG",
     type: "website",
   },
@@ -25,7 +17,6 @@ export const metadata = {
     card: "summary_large_image",
     title: "The Tip - Receive Tips, Grow Wealth",
     description: "Digital wallet for tip recipients. Receive tips via QR or ID without sharing your phone number.",
-    images: ["/og-image.png"],
   },
 };
 
