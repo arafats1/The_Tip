@@ -78,15 +78,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen md:h-[calc(100vh-73px)] bg-gray-50 flex flex-col md:flex-row overflow-hidden">
       {/* Left side: Visuals & Branding */}
-      <div className="md:w-1/2 gradient-bg p-12 text-white flex flex-col justify-between relative overflow-hidden">
+      <div className="md:w-1/2 gradient-bg p-12 text-white flex flex-col justify-center relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-12">
-            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-primary font-bold text-2xl">T</div>
-            <span className="font-bold text-2xl tracking-tight">The Tip</span>
-          </div>
-          
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
             Start your <span className="text-secondary">financial journey</span> today.
           </h1>
@@ -95,24 +90,24 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <div className="relative z-10 mt-12 space-y-6">
+        <div className="relative z-10 mt-8 space-y-4">
           <div className="flex items-center gap-4">
-            <div className="bg-white/10 p-3 rounded-full">
-              <CheckCircle2 className="text-secondary" />
+            <div className="bg-white/10 p-2 rounded-full">
+              <CheckCircle2 size={18} className="text-secondary" />
             </div>
-            <p className="font-medium">Receive tips via any Mobile Money network</p>
+            <p className="font-medium text-sm">Receive tips via any Mobile Money network</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="bg-white/10 p-3 rounded-full">
-              <CheckCircle2 className="text-secondary" />
+            <div className="bg-white/10 p-2 rounded-full">
+              <CheckCircle2 size={18} className="text-secondary" />
             </div>
-            <p className="font-medium">Built-in privacy: No phone numbers shared</p>
+            <p className="font-medium text-sm">Built-in privacy: No phone numbers shared</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="bg-white/10 p-3 rounded-full">
-              <CheckCircle2 className="text-secondary" />
+            <div className="bg-white/10 p-2 rounded-full">
+              <CheckCircle2 size={18} className="text-secondary" />
             </div>
-            <p className="font-medium">Access micro-investments from UGX 1,000</p>
+            <p className="font-medium text-sm">Access micro-investments from UGX 1,000</p>
           </div>
         </div>
 
@@ -122,9 +117,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Right side: Registration Form */}
-      <div className="md:w-1/2 flex items-center justify-center p-6 md:p-12">
+      <div className="md:w-1/2 flex items-center justify-center p-6 md:p-12 md:max-h-screen overflow-y-auto custom-scrollbar">
         <div className="max-w-md w-full">
-          <div className="mb-10">
+          <div className="mb-8">
             <div className="flex gap-2 mb-4">
                <div className={`h-2 flex-1 rounded-full transition-all ${step >= 1 ? 'bg-primary' : 'bg-gray-200'}`}></div>
                <div className={`h-2 flex-1 rounded-full transition-all ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>

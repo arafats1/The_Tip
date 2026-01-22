@@ -42,15 +42,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen md:h-[calc(100vh-73px)] bg-gray-50 flex flex-col md:flex-row overflow-hidden">
       {/* Left side: Branding & Welcome Message */}
-      <div className="md:w-1/2 gradient-bg p-12 text-white flex flex-col justify-between relative overflow-hidden">
+      <div className="md:w-1/2 gradient-bg p-12 text-white flex flex-col justify-center relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-12">
-            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-primary font-bold text-2xl">T</div>
-            <span className="font-bold text-2xl tracking-tight">The Tip</span>
-          </div>
-          
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
             Welcome back to <span className="text-secondary">The Tip.</span>
           </h1>
@@ -59,17 +54,17 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="relative z-10 mt-12 bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 max-w-sm">
-           <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white">
-                 <ShieldCheck size={24} />
+        <div className="relative z-10 mt-8 bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/20 max-w-sm">
+           <div className="flex items-center gap-4 mb-3">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white">
+                 <ShieldCheck size={20} />
               </div>
               <div>
                 <p className="font-bold text-sm">Secure Access</p>
                 <p className="text-xs text-indigo-100 opacity-80">Encryption protected</p>
               </div>
            </div>
-           <p className="text-xs text-indigo-200">Never share your login PIN with anyone. The Tip team will never ask for your PIN.</p>
+           <p className="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Never share your PIN with anyone.</p>
         </div>
 
         {/* Decorative Elements */}
