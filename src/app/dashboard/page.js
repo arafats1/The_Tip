@@ -332,17 +332,18 @@ export default function Dashboard() {
       {/* Goal Modal */}
       {isGoalModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 relative animate-in zoom-in duration-300">
-            <button 
-              onClick={() => setIsGoalModalOpen(false)}
-              className="absolute right-6 top-6 text-gray-400 hover:text-primary transition-colors"
-            >
-              <X size={24} />
-            </button>
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-6 max-h-[90vh] overflow-y-auto relative animate-in zoom-in duration-300 custom-scrollbar">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold text-primary">{editingGoal ? 'Edit Goal' : 'New Goal'}</h2>
+              <button 
+                onClick={() => setIsGoalModalOpen(false)}
+                className="text-gray-400 hover:text-primary transition-colors p-2"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-            <h2 className="text-2xl font-bold text-primary mb-6">{editingGoal ? 'Edit Goal' : 'New Goal'}</h2>
-
-            <form onSubmit={handleGoalSubmit} className="space-y-6">
+            <form onSubmit={handleGoalSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 ml-1">Goal Name</label>
                 <input 
@@ -420,44 +421,46 @@ export default function Dashboard() {
       {/* QR Modal */}
       {isQrModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 relative animate-in zoom-in duration-300 shadow-2xl">
-            <button 
-              onClick={() => setIsQrModalOpen(false)}
-              className="absolute right-6 top-6 text-gray-400 hover:text-primary transition-colors"
-            >
-              <X size={24} />
-            </button>
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-6 max-h-[90vh] overflow-y-auto relative animate-in zoom-in duration-300 shadow-2xl custom-scrollbar">
+            <div className="flex justify-end absolute top-4 right-4 z-20">
+              <button 
+                onClick={() => setIsQrModalOpen(false)}
+                className="text-gray-400 hover:text-primary transition-colors p-2 bg-gray-50/80 backdrop-blur-sm rounded-full shadow-sm"
+              >
+                <X size={20} />
+              </button>
+            </div>
             
-            <div className="text-center space-y-6">
-              <div className="space-y-2">
+            <div className="text-center space-y-4">
+              <div className="space-y-1 pt-2">
                 <h2 className="text-2xl font-bold text-primary">Your Tip QR</h2>
                 <p className="text-gray-500 text-sm">Customers scan this to send you tips</p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-[2rem] inline-block border border-gray-100 flex flex-col items-center gap-4">
+              <div className="bg-gray-50 p-4 rounded-[2rem] inline-block border border-gray-100 flex flex-col items-center gap-3">
                 <QRCodeCanvas 
                   id="tip-qr-code"
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/tip?id=${worker.tipId}`} 
-                  size={200}
+                  size={180}
                   level="H"
                   includeMargin={true}
                   imageSettings={{
                     src: "/favicon.ico",
                     x: undefined,
                     y: undefined,
-                    height: 40,
-                    width: 40,
+                    height: 35,
+                    width: 35,
                     excavate: true,
                   }}
                 />
-                <div className="flex flex-col items-center bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">TIP ID</p>
-                  <p className="text-3xl font-black text-primary tracking-[0.2em]">{worker.tipId}</p>
+                <div className="flex flex-col items-center bg-white px-5 py-2 rounded-2xl border border-gray-100 shadow-sm">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">TIP ID</p>
+                  <p className="text-2xl font-black text-primary tracking-[0.2em]">{worker.tipId}</p>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-2">
-                <div className="bg-primary/5 p-4 rounded-2xl flex items-center justify-between border border-primary/10">
+              <div className="space-y-3 pt-1">
+                <div className="bg-primary/5 p-3 rounded-2xl flex items-center justify-between border border-primary/10">
                   <div className="text-left overflow-hidden">
                     <p className="text-[10px] uppercase font-bold text-primary/60 tracking-wider">Your Unique Link</p>
                     <p className="text-xs font-bold text-primary truncate">
