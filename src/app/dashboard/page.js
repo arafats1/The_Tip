@@ -67,7 +67,10 @@ export default function Dashboard() {
     try {
       const result = await api.getTransactions(workerId);
       if (result.data && Array.isArray(result.data)) {
-        const formattedTips = result.data.map(transaction => {
+        // Filter out goal deposits, only show standard tips
+        const filteredData = result.data.filter(t => !t.type || t.type === 'tip');
+        
+        const formattedTips = filteredData.map(transaction => {
           const createdAt = new Date(transaction.createdAt || transaction.created_at);
           const now = new Date();
           const diffMs = now - createdAt;
@@ -112,8 +115,9 @@ export default function Dashboard() {
       const result = await api.getGoals(workerId);
       if (result.data) {
         // Strapi 5 usually returns flat data if we configured it, but let's handle both
-        const formattedGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
-        setGoals(formattedGoals);
+        const allGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
+        // Only show short-term goals on dashboard
+        setGoals(allGoals.filter(g => !g.isLongTerm));
       }
     } catch (err) {
       console.error('Failed to fetch goals', err);
@@ -127,7 +131,8 @@ export default function Dashboard() {
         title: goalForm.title,
         targetAmount: parseFloat(goalForm.targetAmount),
         allocationPercentage: parseInt(goalForm.allocationPercentage),
-        tip_worker: worker.id
+        tip_worker: worker.id,
+        isLongTerm: false
       };
 
       if (editingGoal) {
@@ -191,7 +196,7 @@ export default function Dashboard() {
                <button className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <ArrowUpRight size={16} /> Send
                </button>
-               <a href="/goals" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
+               <a href="/investments" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <TrendingUp size={16} /> Invest
                </a>
             </div>

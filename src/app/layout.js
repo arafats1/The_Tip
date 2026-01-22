@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
   const navLinks = [
     { name: "Home", href: "/", public: true },
     { name: "Dashboard", href: "/dashboard", public: false },
-    { name: "Invest", href: "/goals", public: false },
+    { name: "Invest", href: "/investments", public: false },
     { name: "Tip Someone", href: "/tip", public: true },
   ].filter(link => link.public || isLoggedIn);
 

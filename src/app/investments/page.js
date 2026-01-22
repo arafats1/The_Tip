@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Target, TrendingUp, ShieldCheck, ChevronRight, Info, X, Calendar, Wallet } from 'lucide-react';
 import { api } from '@/lib/api';
 
-export default function GoalsPage() {
+export default function InvestmentsPage() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [worker, setWorker] = useState(null);
@@ -45,9 +45,9 @@ export default function GoalsPage() {
     try {
       const result = await api.getGoals(workerId);
       if (result.data) {
-        const formattedGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
-        // Only show long term goals on this page if they match
-        setGoals(formattedGoals);
+        const allGoals = result.data.map(g => g.attributes ? { id: g.id, ...g.attributes } : g);
+        // Only show long term goals on this page
+        setGoals(allGoals.filter(g => g.isLongTerm));
       }
     } catch (err) {
       console.error('Failed to fetch goals', err);
@@ -155,12 +155,12 @@ export default function GoalsPage() {
 
           <div className="space-y-4">
              {/* Dynamic Goal cards */}
-             {goals.filter(g => g.isLongTerm).length === 0 ? (
+             {goals.length === 0 ? (
                <div className="text-center py-8 text-gray-400 bg-white rounded-3xl border-2 border-dashed border-gray-100">
                  <p className="font-bold">No financial goals set yet</p>
                </div>
              ) : (
-               goals.filter(g => g.isLongTerm).map((goal) => {
+               goals.map((goal) => {
                  const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100) || 0);
                  return (
                    <div key={goal.id} className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 card-shadow space-y-4">
