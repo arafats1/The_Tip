@@ -32,3 +32,34 @@ body {
 .card-shadow {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
+
+/* QR Scanner Custom Styles */
+#reader {
+  border: none !important;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#reader__scan_region {
+  background: white !important;
+}
+
+#reader__dashboard_section_csr button {
+  background-color: #1E1B4B !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+}
+
+#reader video {
+  object-fit: cover !important;
+  border-radius: 1.5rem !important;
+}
+
+#reader__status_span {
+  display: none !important;
+}
+

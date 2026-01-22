@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, ShieldCheck, CreditCard, Smartphone, QrCode, Search, User, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function TipPage() {
   const router = useRouter();
@@ -11,6 +12,73 @@ export default function TipPage() {
   const [step, setStep] = useState(0); // 0: Find, 1: Amount, 2: Payment Method, 3: Success
   const [searchId, setSearchId] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const scannerRef = useRef(null);
+
+  useEffect(() => {
+    let html5QrCode;
+    
+    if (isScanning) {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          // Success
+          let tipId = decodedText;
+          if (decodedText.includes('/tip/')) {
+            tipId = decodedText.split('/tip/').pop();
+          } else if (decodedText.includes('tip:')) {
+            tipId = decodedText.split('tip:').pop();
+          }
+          
+          handleScanSuccess(tipId);
+        },
+        (errorMessage) => {
+          // Error handling (too noisy to log)
+        }
+      ).catch((err) => {
+        console.error("Camera access error:", err);
+        setError("Could not access camera. Please ensure permissions are granted.");
+        setIsScanning(false);
+      });
+    }
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(err => console.error("Error stopping scanner", err));
+      }
+    };
+  }, [isScanning]);
+
+  const handleScanSuccess = async (id) => {
+    setIsScanning(false);
+    setSearchId(id);
+    // Auto-trigger worker lookup
+    setError('');
+    setIsProcessing(true);
+    try {
+      const result = await api.lookupWorker(id.toUpperCase());
+      if (result && !result.error && result.fullName) {
+        setWorker({
+          name: result.fullName,
+          role: result.occupation,
+          location: result.city,
+          id: result.tipId,
+          rawId: result.documentId || result.id
+        });
+        setStep(1);
+      } else {
+        setError('Recipient not found from QR. Please try typing the ID.');
+      }
+    } catch (err) {
+      setError('Connection error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const [paymentMethod, setPaymentMethod] = useState(null); // 'momo' or 'card'
   const [momoNumber, setMomoNumber] = useState('');
   const [cardData, setCardData] = useState({ number: '', expiry: '', cvv: '' });
@@ -94,21 +162,32 @@ export default function TipPage() {
 
             <div className="space-y-6">
               {/* Scan QR Area */}
-              <button 
-                onClick={() => setIsScanning(true)}
-                className="w-full aspect-square max-w-[200px] mx-auto border-4 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary hover:bg-indigo-50/50 transition-all group relative overflow-hidden"
+              <div 
+                className="w-full aspect-square max-w-[280px] mx-auto border-4 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary hover:bg-indigo-50/50 transition-all group relative overflow-hidden bg-white"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <QrCode size={48} className="text-primary group-hover:scale-110 transition-transform" />
-                <span className="font-bold text-gray-400 group-hover:text-primary">Scan QR Code</span>
-                {isScanning && (
-                   <div className="absolute inset-0 bg-white flex flex-col items-center justify-center gap-4 animate-in fade-in zoom-in duration-300">
-                     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                     <p className="font-bold text-primary">Accessing Camera...</p>
-                     <button onClick={(e) => {e.stopPropagation(); setIsScanning(false);}} className="text-xs font-bold text-gray-400 underline">Cancel</button>
-                   </div>
+                {!isScanning ? (
+                  <button 
+                    onClick={() => setIsScanning(true)}
+                    className="w-full h-full flex flex-col items-center justify-center gap-4 group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <QrCode size={48} className="text-primary group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-gray-400 group-hover:text-primary">Tap to Scan QR Code</span>
+                  </button>
+                ) : (
+                  <div className="absolute inset-0 bg-white flex flex-col items-center justify-center gap-2 animate-in fade-in zoom-in duration-300">
+                    <div id="reader" className="w-full h-full"></div>
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+                      <button 
+                        onClick={(e) => {e.stopPropagation(); setIsScanning(false);}} 
+                        className="bg-red-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-red-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
