@@ -13,9 +13,9 @@ export default function Home() {
             The privacy-first digital wallet for everyday service workers in East Africa. Receive tips via QR/NFC without sharing your phone number.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="bg-secondary text-primary px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:transform hover:scale-105 transition-all outline-none">
+            <a href="/register" className="bg-secondary text-primary px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:transform hover:scale-105 transition-all outline-none">
               Join as a Worker <ArrowRight size={20} />
-            </button>
+            </a>
             <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all outline-none">
               Tip Someone
             </button>

@@ -36,9 +36,9 @@ export default function RootLayout({ children }) {
                   {link.name}
                 </a>
               ))}
-              <button className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
+              <a href="/register" className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">
                 Get Started
-              </button>
+              </a>
             </div>
 
             {/* Mobile Toggle */}
@@ -63,9 +63,13 @@ export default function RootLayout({ children }) {
                   {link.name}
                 </a>
               ))}
-              <button className="bg-primary text-white w-full py-4 rounded-2xl font-bold mt-4">
+              <a 
+                href="/register" 
+                className="bg-primary text-white w-full py-4 rounded-2xl font-bold mt-4 text-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Get Started
-              </button>
+              </a>
             </div>
           )}
         </nav>
