@@ -478,7 +478,7 @@ export default function Dashboard() {
                       ></div>
                     </div>
 
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
+                    <div className="flex justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
                        <button 
                         onClick={() => {
                           setEditingGoal(goal);
