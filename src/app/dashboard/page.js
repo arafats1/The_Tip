@@ -175,10 +175,18 @@ export default function Dashboard() {
     }
   };
 
+  const refreshData = async () => {
+    if (!worker) return;
+    const wid = worker.numericId || worker.id;
+    await Promise.all([
+      fetchTransactions(wid),
+      fetchGoals(wid)
+    ]);
+  };
+
   const handleGoalSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Use numeric ID for relations, documentId for URLs
       const workerNumericId = worker.numericId || worker.id;
       const data = {
         title: goalForm.title,
@@ -189,7 +197,6 @@ export default function Dashboard() {
       };
 
       if (editingGoal) {
-        // editingGoal.id is now documentId from fetchGoals
         await api.updateGoal(editingGoal.id, data);
       } else {
         await api.createGoal(data);
@@ -198,7 +205,9 @@ export default function Dashboard() {
       setIsGoalModalOpen(false);
       setEditingGoal(null);
       setGoalForm({ title: '', targetAmount: '', allocationPercentage: 0 });
-      fetchGoals(workerNumericId);
+      
+      // Wait for a tiny bit to ensure Strapi has committed the change
+      setTimeout(() => fetchGoals(workerNumericId), 300);
     } catch (err) {
       console.error('Error saving goal', err);
     }
@@ -208,9 +217,9 @@ export default function Dashboard() {
     if (window.confirm('Are you sure you want to delete this goal?')) {
       try {
         const workerNumericId = worker.numericId || worker.id;
-        // id passed here is documentId from our map in fetchGoals
         await api.deleteGoal(id);
-        fetchGoals(workerNumericId);
+        // Wait for a tiny bit to ensure Strapi has committed the change
+        setTimeout(() => fetchGoals(workerNumericId), 300);
       } catch (err) {
         console.error('Error deleting goal', err);
       }
@@ -252,7 +261,7 @@ export default function Dashboard() {
       setWorker({ ...worker, balance: newBalance });
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
-      fetchTransactions(workerId);
+      setTimeout(() => fetchTransactions(workerId), 300);
       alert('Withdrawal successful! Funds sent to ' + worker.phone);
     } catch (err) {
       console.error('Withdraw error', err);
@@ -302,7 +311,7 @@ export default function Dashboard() {
       setWorker({ ...worker, balance: newBalance });
       setIsSendModalOpen(false);
       setSendForm({ amount: '', network: 'MTN', phone: '' });
-      fetchTransactions(workerId);
+      setTimeout(() => fetchTransactions(workerId), 300);
       alert(`Sent UGX ${amount.toLocaleString()} to ${sendForm.phone} (${sendForm.network})`);
     } catch (err) {
       console.error('Send error', err);
