@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode, Plus, Pencil, Trash2, X, Download, Share2, Copy, Check } from 'lucide-react';
 import { api } from '@/lib/api';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
@@ -10,6 +11,10 @@ export default function Dashboard() {
   const [recentTips, setRecentTips] = useState([]);
   const [goals, setGoals] = useState([]);
   
+  // QR Modal State
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   // Goal Modal State
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
@@ -182,7 +187,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <>
+      <div className="p-6 max-w-5xl mx-auto space-y-8">
       {/* Wallet Balance Card */}
       <div className="gradient-bg rounded-[2rem] p-6 md:p-8 text-white card-shadow relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
@@ -203,8 +209,16 @@ export default function Dashboard() {
           </div>
           <div className="w-full md:w-auto bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl flex flex-col items-center">
              <QrCode size={100} className="mb-3" />
-             <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Your Tip ID: {worker.tipId}</p>
-             <button className="mt-2 text-xs font-bold underline">Show Full QR</button>
+             <div className="flex flex-col items-center">
+               <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Your Tip ID</p>
+               <p className="text-xl font-black tracking-widest leading-none mt-1">{worker.tipId}</p>
+             </div>
+             <button 
+              onClick={() => setIsQrModalOpen(true)}
+              className="mt-4 text-xs font-bold underline hover:text-secondary transition-colors"
+             >
+              Show Full QR
+             </button>
           </div>
         </div>
         {/* Subtle Decorative Circle */}
@@ -401,6 +415,117 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* QR Modal */}
+      {isQrModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 relative animate-in zoom-in duration-300 shadow-2xl">
+            <button 
+              onClick={() => setIsQrModalOpen(false)}
+              className="absolute right-6 top-6 text-gray-400 hover:text-primary transition-colors"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="text-center space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-primary">Your Tip QR</h2>
+                <p className="text-gray-500 text-sm">Customers scan this to send you tips</p>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-[2rem] inline-block border border-gray-100 flex flex-col items-center gap-4">
+                <QRCodeSVG 
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/tip?id=${worker.tipId}`} 
+                  size={180}
+                  level="H"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "/favicon.ico",
+                    x: undefined,
+                    y: undefined,
+                    height: 35,
+                    width: 35,
+                    excavate: true,
+                  }}
+                />
+                <div className="flex flex-col items-center bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">TIP ID</p>
+                  <p className="text-3xl font-black text-primary tracking-[0.2em]">{worker.tipId}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="bg-primary/5 p-4 rounded-2xl flex items-center justify-between border border-primary/10">
+                  <div className="text-left overflow-hidden">
+                    <p className="text-[10px] uppercase font-bold text-primary/60 tracking-wider">Your Unique Link</p>
+                    <p className="text-xs font-bold text-primary truncate">
+                      {typeof window !== 'undefined' ? window.location.host : ''}/tip?id={worker.tipId}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const link = `${window.location.origin}/tip?id=${worker.tipId}`;
+                      navigator.clipboard.writeText(link);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="p-3 bg-white text-primary rounded-xl shadow-sm hover:bg-gray-50 transition-all border border-gray-100 shrink-0"
+                  >
+                    {copied ? <Check size={18} className="text-secondary" /> : <Copy size={18} />}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    className="flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-2xl font-bold text-xs hover:bg-opacity-90 transition-all shadow-md"
+                    onClick={() => {
+                      const svg = document.querySelector('svg');
+                      if (svg) {
+                        const svgData = new XMLSerializer().serializeToString(svg);
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
+                        const img = new Image();
+                        img.onload = () => {
+                          canvas.width = img.width;
+                          canvas.height = img.height;
+                          ctx.drawImage(img, 0, 0);
+                          const pngFile = canvas.toDataURL("image/png");
+                          const downloadLink = document.createElement("a");
+                          downloadLink.download = `tip-qr-${worker.tipId}.png`;
+                          downloadLink.href = pngFile;
+                          downloadLink.click();
+                        };
+                        img.src = "data:image/svg+xml;base64," + btoa(svgData);
+                      }
+                    }}
+                  >
+                    <Download size={14} /> Download
+                  </button>
+                  <button 
+                    className="flex items-center justify-center gap-2 bg-secondary text-white py-4 rounded-2xl font-bold text-xs hover:bg-opacity-90 transition-all shadow-md"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'Tip me on The Tip',
+                          text: `Hi! You can send me a tip using this link:`,
+                          url: `${window.location.origin}/tip?id=${worker.tipId}`
+                        });
+                      }
+                    }}
+                  >
+                    <Share2 size={14} /> Share
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-secondary/10 p-3 rounded-xl border border-secondary/10">
+                 <p className="text-[10px] text-secondary font-bold">PRO TIP: Print this QR code and display it for customers!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
