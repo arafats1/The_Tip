@@ -415,47 +415,63 @@ export default function Dashboard() {
                 <p className="text-sm">No goals set yet.</p>
               </div>
             ) : (
-              goals.map((goal) => {
+              goals.map((goal, idx) => {
                 const progress = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100) || 0);
+                const colors = [
+                  { bg: 'bg-indigo-50', text: 'text-indigo-600', bar: 'bg-indigo-600' },
+                  { bg: 'bg-emerald-50', text: 'text-emerald-600', bar: 'bg-emerald-600' },
+                  { bg: 'bg-amber-50', text: 'text-amber-600', bar: 'bg-amber-600' },
+                  { bg: 'bg-rose-50', text: 'text-rose-600', bar: 'bg-rose-600' }
+                ];
+                const color = colors[idx % colors.length];
+
                 return (
-                  <div key={goal.id} className="space-y-2 group relative">
-                    <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-primary">{goal.title}</span>
-                        <span className="text-[10px] bg-indigo-50 text-primary px-1.5 py-0.5 rounded-md font-bold">{goal.allocationPercentage}%</span>
+                  <div key={goal.id} className="space-y-3 group relative bg-gray-50/50 p-4 rounded-2xl border border-gray-100 hover:border-primary/20 transition-all">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-primary text-base">{goal.title}</span>
+                          <span className={`text-[10px] ${color.bg} ${color.text} px-2 py-0.5 rounded-full font-bold uppercase tracking-wider`}>
+                            {goal.allocationPercentage}%
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-gray-400">
+                          UGX {parseFloat(goal.currentAmount || 0).toLocaleString()} 
+                          <span className="mx-1 text-gray-300">/</span> 
+                          {parseFloat(goal.targetAmount).toLocaleString()}
+                        </p>
                       </div>
-                      <span className="text-gray-500">{progress}%</span>
+                      <span className={`text-lg font-black ${color.text}`}>{progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    
+                    <div className="w-full bg-white h-3 rounded-full overflow-hidden shadow-inner border border-gray-100">
                       <div 
-                        className={`h-full rounded-full transition-all duration-1000 ${progress >= 100 ? 'bg-accent' : 'bg-primary'}`}
+                        className={`h-full rounded-full transition-all duration-1000 shadow-sm ${progress >= 100 ? 'bg-accent' : color.bar}`}
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-[10px] text-gray-400">UGX {parseFloat(goal.currentAmount || 0).toLocaleString()} / {parseFloat(goal.targetAmount).toLocaleString()}</p>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button 
-                          onClick={() => {
-                            setEditingGoal(goal);
-                            setGoalForm({
-                              title: goal.title,
-                              targetAmount: goal.targetAmount,
-                              allocationPercentage: goal.allocationPercentage
-                            });
-                            setIsGoalModalOpen(true);
-                          }}
-                          className="text-primary hover:text-accent transition-colors"
-                         >
-                           <Pencil size={12} />
-                         </button>
-                         <button 
-                          onClick={() => deleteGoal(goal.id)}
-                          className="text-red-400 hover:text-red-500 transition-colors"
-                         >
-                           <Trash2 size={12} />
-                         </button>
-                      </div>
+
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-1 rounded-lg">
+                       <button 
+                        onClick={() => {
+                          setEditingGoal(goal);
+                          setGoalForm({
+                            title: goal.title,
+                            targetAmount: goal.targetAmount,
+                            allocationPercentage: goal.allocationPercentage
+                          });
+                          setIsGoalModalOpen(true);
+                        }}
+                        className="text-primary hover:text-accent p-1 transition-colors"
+                       >
+                         <Pencil size={14} />
+                       </button>
+                       <button 
+                        onClick={() => deleteGoal(goal.id)}
+                        className="text-red-400 hover:text-red-500 p-1 transition-colors"
+                       >
+                         <Trash2 size={14} />
+                       </button>
                     </div>
                   </div>
                 );
