@@ -45,9 +45,24 @@ export default function RegisterPage() {
 
         const result = await api.registerWorker(payload);
         
+        let workerData = null;
         if (result.data) {
-          // Success! Save worker data to local storage or state
-          localStorage.setItem('tip_worker', JSON.stringify(result.data));
+          // Strapi v4 format
+          workerData = {
+            id: result.data.id,
+            ...result.data.attributes,
+            tipId: result.data.attributes.tipId || 'Pending'
+          };
+        } else if (result.id) {
+          // Strapi v5 flat format
+          workerData = {
+            ...result,
+            tipId: result.tipId || 'Pending'
+          };
+        }
+        
+        if (workerData) {
+          localStorage.setItem('tip_worker', JSON.stringify(workerData));
           window.location.href = '/dashboard';
         } else {
           setError(result.error?.message || 'Registration failed');

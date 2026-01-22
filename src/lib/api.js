@@ -25,6 +25,11 @@ export const api = {
     return response.json();
   },
 
+  getWorker: async (workerId) => {
+    const response = await fetch(`${API_URL}/tip-workers/${workerId}`);
+    return response.json();
+  },
+
   // Transactions
   createTransaction: async (data) => {
     const response = await fetch(`${API_URL}/tip-transactions/public`, {

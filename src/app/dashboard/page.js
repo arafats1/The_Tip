@@ -2,17 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import { Wallet, TrendingUp, ArrowDownLeft, ArrowUpRight, History, QrCode } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function Dashboard() {
   const [worker, setWorker] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedWorker = localStorage.getItem('tip_worker');
-    if (savedWorker) {
-      setWorker(JSON.parse(savedWorker));
-    } else {
-      window.location.href = '/login';
-    }
+    const fetchLatestBalance = async () => {
+      const savedWorker = localStorage.getItem('tip_worker');
+      if (savedWorker) {
+        const localData = JSON.parse(savedWorker);
+        try {
+          // Fetch latest data from server
+          const result = await api.getWorker(localData.id);
+          
+          let updatedData = null;
+          // Handle both Strapi v4 (nested) and Strapi v5 (flat) formats
+          if (result.data) {
+            updatedData = { ...localData, ...result.data.attributes, id: result.data.id };
+          } else if (result.id) {
+            updatedData = { ...localData, ...result };
+          }
+
+          if (updatedData) {
+            setWorker(updatedData);
+            localStorage.setItem('tip_worker', JSON.stringify(updatedData));
+          } else {
+            setWorker(localData);
+          }
+        } catch (err) {
+          console.error("Failed to fetch latest balance", err);
+          setWorker(localData);
+        }
+      } else {
+        window.location.href = '/login';
+      }
+      setLoading(false);
+    };
+
+    fetchLatestBalance();
   }, []);
 
   const recentTips = [
