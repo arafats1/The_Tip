@@ -50,11 +50,11 @@ export default function TipPage() {
                 </div>
 
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">UGX</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">UGX</span>
                   <input 
                     type="number"
                     placeholder="Other amount"
-                    className="w-full bg-gray-50 border-2 border-transparent focus:border-accent p-4 pl-14 rounded-2xl outline-none font-bold text-primary"
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-accent p-4 pl-14 rounded-2xl outline-none font-bold text-primary placeholder:text-gray-400"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                   />

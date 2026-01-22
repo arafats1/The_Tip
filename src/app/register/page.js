@@ -78,12 +78,12 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <input 
                       required
                       type="text" 
                       placeholder="e.g. John Mukasa"
-                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium"
+                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400"
                       value={formData.fullName}
                       onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                     />
@@ -93,12 +93,12 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">Phone Number (Mobile Money)</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <input 
                       required
                       type="tel" 
                       placeholder="e.g. 0770 000 000"
-                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium"
+                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     />
@@ -111,10 +111,10 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700 ml-1">What is your role?</label>
                   <div className="relative">
-                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <select 
                       required
-                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium appearance-none"
+                      className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium appearance-none text-primary"
                       value={formData.occupation}
                       onChange={(e) => setFormData({...formData, occupation: e.target.value})}
                     >
