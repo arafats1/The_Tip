@@ -63,7 +63,7 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="bg-gray-50 py-20 px-6">
+      <section className="bg-indigo-50 py-20 px-6 border-y border-indigo-100">
         <div className="max-w-6xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold text-primary mb-4">More than just tips</h2>
           <p className="text-gray-500">Features designed to help you reach your financial goals.</p>
