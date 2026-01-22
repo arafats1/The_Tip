@@ -116,50 +116,56 @@ export default function Dashboard() {
         setGoals(formattedGoals);
       }
     } catch (err) {
-      console.error('Failed to fetch goals', err);
-    }
-  };
-
-  const handleGoalSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const data = {
-        ...goalForm,
-        targetAmount: parseFloat(goalForm.targetAmount),
-        allocationPercentage: parseInt(goalForm.allocationPercentage),
-        tip_worker: worker.id
-      };
-
-      if (editingGoal) {
-        await api.updateGoal(editingGoal.id, data);
-      } else {
-        await api.createGoal(data);
+        console.error('Failed to fetch investment strategies', err);
       }
-      
-      setIsGoalModalOpen(false);
-      setEditingGoal(null);
-      setGoalForm({ title: '', targetAmount: '', allocationPercentage: 0 });
-      fetchGoals(worker.id);
-    } catch (err) {
-      console.error('Error saving goal', err);
-    }
-  };
+    };
 
-  const deleteGoal = async (id) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
+    const handleGoalSubmit = async (e) => {
+      e.preventDefault();
       try {
-        await api.deleteGoal(id);
+        const data = {
+          ...goalForm,
+          targetAmount: parseFloat(goalForm.targetAmount),
+          allocationPercentage: parseInt(goalForm.allocationPercentage),
+          tip_worker: worker.id
+        };
+
+        if (editingGoal) {
+          await api.updateGoal(editingGoal.id, data);
+        } else {
+          await api.createGoal(data);
+        }
+        
+        setIsGoalModalOpen(false);
+        setEditingGoal(null);
+        setGoalForm({ title: '', targetAmount: '', allocationPercentage: 0 });
         fetchGoals(worker.id);
       } catch (err) {
-        console.error('Error deleting goal', err);
+        console.error('Error saving strategy', err);
       }
-    }
-  };
+    };
 
-  const usedPercentage = goals.reduce((sum, g) => sum + (g.allocationPercentage || 0), 0);
-  const availablePercentage = 100 - usedPercentage + (editingGoal ? editingGoal.allocationPercentage : 0);
+    const deleteGoal = async (id) => {
+      if (window.confirm('Are you sure you want to delete this strategy?')) {
+        try {
+          await api.deleteGoal(id);
+          fetchGoals(worker.id);
+        } catch (err) {
+          console.error('Error deleting strategy', err);
+        }
+      }
+    };
 
-  if (!worker) return null;
+    const totalAllocated = goals.reduce((sum, g) => sum + (g.allocationPercentage || 0), 0);
+    const availablePercentage = 100 - (totalAllocated - (editingGoal ? editingGoal.allocationPercentage : 0));
+
+  if (loading || !worker) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
@@ -176,6 +182,9 @@ export default function Dashboard() {
                <button className="flex-1 md:flex-none bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
                  <ArrowUpRight size={16} /> Send
                </button>
+               <a href="/goals" className="flex-1 md:flex-none bg-accent text-white px-6 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2">
+                 <TrendingUp size={16} /> Invest
+               </a>
             </div>
           </div>
           <div className="w-full md:w-auto bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl flex flex-col items-center">
@@ -222,13 +231,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats / Goals Quick View */}
+        {/* Stats / Invest Quick View */}
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-primary">Goals Progress</h3>
+          <h3 className="text-xl font-bold text-primary">Invest Progress</h3>
           <div className="bg-white p-6 rounded-2xl card-shadow border border-gray-50 space-y-6">
             {goals.length === 0 ? (
               <div className="text-center py-4 text-gray-400">
-                <p className="text-sm">No goals set yet.</p>
+                <p className="text-sm">No investment strategies set yet.</p>
               </div>
             ) : (
               goals.map((goal) => {
@@ -286,7 +295,7 @@ export default function Dashboard() {
               }}
               className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-accent hover:text-accent transition-all flex items-center justify-center gap-2"
             >
-              <Plus size={16} /> Add New Goal
+              <Plus size={16} /> Add Strategy
             </button>
           </div>
         </div>
@@ -303,11 +312,11 @@ export default function Dashboard() {
               <X size={24} />
             </button>
 
-            <h2 className="text-2xl font-bold text-primary mb-6">{editingGoal ? 'Edit Goal' : 'New Savings Goal'}</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">{editingGoal ? 'Edit Strategy' : 'New Investment Strategy'}</h2>
 
             <form onSubmit={handleGoalSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 ml-1">Goal Title</label>
+                <label className="text-sm font-bold text-gray-700 ml-1">Strategy Name</label>
                 <input 
                   required
                   type="text"
@@ -351,7 +360,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-400 italic mt-1 leading-relaxed">
-                  This percentage of every tip you receive will be automatically saved towards this goal.
+                  This percentage of every tip you receive will be automatically saved towards this strategy.
                 </p>
               </div>
 
@@ -359,7 +368,7 @@ export default function Dashboard() {
                 type="submit"
                 className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:bg-opacity-95 transition-all shadow-lg"
               >
-                {editingGoal ? 'Save Changes' : 'Create Goal'}
+                {editingGoal ? 'Save Changes' : 'Create Strategy'}
               </button>
             </form>
           </div>

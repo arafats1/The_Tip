@@ -1,8 +1,30 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Target, TrendingUp, ShieldCheck, ChevronRight, Info } from 'lucide-react';
 
 export default function GoalsPage() {
+  const [loading, setLoading] = useState(true);
+  const [worker, setWorker] = useState(null);
+
+  useEffect(() => {
+    const savedWorker = localStorage.getItem('tip_worker');
+    if (savedWorker) {
+      setWorker(JSON.parse(savedWorker));
+    } else {
+      window.location.href = '/login';
+    }
+    setLoading(false);
+  }, []);
+
+  if (loading || !worker) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   const funds = [
     { name: "Balanced Fund", manager: "Xeno", yield: "+12.5% p.a", risk: "Low", icon: "📈" },
     { name: "Equity Fund", manager: "UAP Old Mutual", yield: "+15.2% p.a", risk: "Medium", icon: "📊" },
