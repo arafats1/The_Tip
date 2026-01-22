@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
     { name: "Home", href: "/" },
     { name: "Dashboard", href: "/dashboard" },
     { name: "Goals & Invest", href: "/goals" },
-    { name: "Sample Tip Page", href: "/tip" },
+    { name: "Tip Someone", href: "/tip" },
   ];
 
   return (

@@ -16,9 +16,9 @@ export default function Home() {
             <a href="/register" className="bg-secondary text-primary px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:transform hover:scale-105 transition-all outline-none">
               Join as a Worker <ArrowRight size={20} />
             </a>
-            <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all outline-none">
+            <a href="/tip" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all outline-none flex items-center justify-center">
               Tip Someone
-            </button>
+            </a>
           </div>
         </div>
       </section>

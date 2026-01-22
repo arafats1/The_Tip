@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Phone, Lock, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     phone: '',
     pin: '',
   });
+  const [showPin, setShowPin] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -84,13 +85,20 @@ export default function LoginPage() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                 <input 
                   required
-                  type="password"
+                  type={showPin ? "text" : "password"}
                   maxLength={4}
                   placeholder="••••"
-                  className="w-full bg-white border-2 border-gray-100 p-4 pl-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400 tracking-[0.5em]"
+                  className="w-full bg-white border-2 border-gray-100 p-4 px-12 rounded-2xl outline-none focus:border-primary transition-all font-medium text-primary placeholder:text-gray-400 tracking-[0.5em]"
                   value={formData.pin}
                   onChange={(e) => setFormData({...formData, pin: e.target.value})}
                 />
+                <button 
+                  type="button"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                  onClick={() => setShowPin(!showPin)}
+                >
+                  {showPin ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
