@@ -228,15 +228,15 @@ export default function InvestmentsPage() {
                      </div>
                      <div className="flex justify-between items-end">
                        <div>
-                         <p className="text-lg font-bold text-primary">UGX {parseFloat(goal.currentAmount || 0).toLocaleString()}</p>
-                         <p className="text-[10px] text-gray-400">Saved of UGX {parseFloat(goal.targetAmount).toLocaleString()}</p>
+                         <p className="text-2xl font-black text-accent">UGX {parseFloat(goal.currentAmount || 0).toLocaleString()}</p>
+                         <p className="text-[10px] md:text-xs font-bold text-gray-400">Saved of UGX {parseFloat(goal.targetAmount).toLocaleString()}</p>
                        </div>
                        <button 
                         onClick={() => {
                           setSelectedGoal(goal);
                           setIsAddFundsModalOpen(true);
                         }}
-                        className="text-accent font-bold text-sm bg-accent/5 px-4 py-2 rounded-xl hover:bg-accent hover:text-white transition-all"
+                        className="text-accent font-bold text-sm bg-accent/5 px-4 py-2 rounded-xl hover:bg-accent hover:text-white transition-all mb-1"
                        >
                         Add Funds
                        </button>
@@ -274,7 +274,7 @@ export default function InvestmentsPage() {
              <div className="bg-white/5 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                <div>
                  <p className="text-[10px] text-white/60 font-bold uppercase">Invested Balance</p>
-                 <p className="text-xl font-bold">UGX {investedBalance.toLocaleString()}</p>
+                 <p className="text-2xl font-black">UGX {investedBalance.toLocaleString()}</p>
                </div>
                <div className="text-[#3ed5a2] font-bold text-sm bg-white p-2 px-3 rounded-lg">+8.2% total gain</div>
              </div>
