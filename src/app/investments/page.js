@@ -14,6 +14,12 @@ export default function InvestmentsPage() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [worker, setWorker] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 5000);
+  };
   
   // Modals state
   const [isNewGoalModalOpen, setIsNewGoalModalOpen] = useState(false);
@@ -89,7 +95,7 @@ export default function InvestmentsPage() {
     try {
       const amount = parseFloat(fundAmount);
       if (fundMethod === 'wallet' && worker.balance < amount) {
-        alert('Insufficient wallet balance');
+        showNotification('Insufficient wallet balance', 'error');
         return;
       }
 
@@ -115,7 +121,7 @@ export default function InvestmentsPage() {
       }
 
       if (!targetGoalId) {
-        alert('Could not determine investment target');
+        showNotification('Could not determine investment target', 'error');
         return;
       }
 
@@ -148,10 +154,10 @@ export default function InvestmentsPage() {
       setSelectedFund(null);
       setSelectedGoal(null);
       fetchGoals(worker.id);
-      alert('Investment processed successfully!');
+      showNotification('Investment processed successfully!');
     } catch (err) {
       console.error('Error adding funds', err);
-      alert('Failed to process investment');
+      showNotification('Failed to process investment', 'error');
     }
   };
 
@@ -173,7 +179,19 @@ export default function InvestmentsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-10 md:space-y-12 pb-20">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-10 md:space-y-12 pb-20 relative">
+      {/* Notification Banner */}
+      {notification && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md animate-in slide-in-from-top-4 duration-300`}>
+          <div className={`${notification.type === 'error' ? 'bg-red-500' : 'bg-accent'} text-white px-6 py-4 rounded-2xl shadow-xl flex items-center justify-between gap-4`}>
+            <p className="font-bold text-sm">{notification.message}</p>
+            <button onClick={() => setNotification(null)} className="shrink-0 p-1 hover:bg-white/20 rounded-lg transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Back Button (Small Screen only) */}
       <div className="md:hidden pt-2">
         <a href="/dashboard" className="inline-flex items-center gap-2 text-primary font-bold text-sm bg-gray-100 px-4 py-2 rounded-xl">

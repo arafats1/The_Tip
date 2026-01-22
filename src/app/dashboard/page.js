@@ -11,6 +11,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 5000);
+  };
   
   // QR Modal State
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -220,8 +226,10 @@ export default function Dashboard() {
         await api.deleteGoal(id);
         // Wait for a tiny bit to ensure Strapi has committed the change
         setTimeout(() => fetchGoals(workerNumericId), 300);
+        showNotification('Goal deleted successfully');
       } catch (err) {
         console.error('Error deleting goal', err);
+        showNotification('Failed to delete goal', 'error');
       }
     }
   };
@@ -231,7 +239,7 @@ export default function Dashboard() {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) return;
     if (amount > worker.balance) {
-      alert('Insufficient balance');
+      showNotification('Insufficient balance', 'error');
       return;
     }
 
@@ -262,10 +270,10 @@ export default function Dashboard() {
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
       setTimeout(() => fetchTransactions(workerId), 300);
-      alert('Withdrawal successful! Funds sent to ' + worker.phone);
+      showNotification('Withdrawal successful! Funds sent to ' + worker.phone);
     } catch (err) {
       console.error('Withdraw error', err);
-      alert('Withdrawal failed. Please try again.');
+      showNotification('Withdrawal failed. Please try again.', 'error');
     } finally {
       setTransferLoading(false);
     }
@@ -276,12 +284,12 @@ export default function Dashboard() {
     const amount = parseFloat(sendForm.amount);
     if (!amount || amount <= 0) return;
     if (amount > worker.balance) {
-      alert('Insufficient balance');
+      showNotification('Insufficient balance', 'error');
       return;
     }
 
     if (!sendForm.phone || sendForm.phone.length < 10) {
-      alert('Invalid recipient phone number');
+      showNotification('Invalid recipient phone number', 'error');
       return;
     }
 
@@ -312,10 +320,10 @@ export default function Dashboard() {
       setIsSendModalOpen(false);
       setSendForm({ amount: '', network: 'MTN', phone: '' });
       setTimeout(() => fetchTransactions(workerId), 300);
-      alert(`Sent UGX ${amount.toLocaleString()} to ${sendForm.phone} (${sendForm.network})`);
+      showNotification(`Sent UGX ${amount.toLocaleString()} to ${sendForm.phone} (${sendForm.network})`);
     } catch (err) {
       console.error('Send error', err);
-      alert('Transfer failed. Please try again.');
+      showNotification('Transfer failed. Please try again.', 'error');
     } finally {
       setTransferLoading(false);
     }
@@ -343,6 +351,18 @@ export default function Dashboard() {
 
   return (
     <>
+      {/* Notification Banner */}
+      {notification && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md animate-in slide-in-from-top-4 duration-300`}>
+          <div className={`${notification.type === 'error' ? 'bg-rose-500' : 'bg-primary'} text-white px-6 py-4 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-white/10`}>
+            <p className="font-bold text-sm">{notification.message}</p>
+            <button onClick={() => setNotification(null)} className="shrink-0 p-1 hover:bg-white/20 rounded-lg transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="p-6 max-w-5xl mx-auto space-y-8">
       {/* Wallet Balance Card */}
       <div className="gradient-bg rounded-[2rem] p-6 md:p-8 text-white card-shadow relative overflow-hidden">
